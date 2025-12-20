@@ -849,37 +849,37 @@ EOF
  1150  bash gen-certs.sh 
  1151  bash patch-ca-bundle.sh
  1152  oc get pods
- 1153  kubectl -n vllmbench-profiler logs deploy/env-injector -f
- 1154  oc get pods vllmbench-profiler
- 1155  oc get pods -n vllmbench-profiler
+ 1153  kubectl -n vllm-profiler logs deploy/env-injector -f
+ 1154  oc get pods vllm-profiler
+ 1155  oc get pods -n vllm-profiler
  1156  bash validate_webhook.sh 
  1157  vi validate_webhook.sh 
  1158  chmod +x validate_webhook.sh 
  1159  DO_TEST=1 ./validate_webhook.sh 
- 1160  kubectl -n vllmbench-profiler logs deploy/env-injector -f
+ 1160  kubectl -n vllm-profiler logs deploy/env-injector -f
  1161  ls
  1162  vi webhook.py 
  1163  oc get pods
  1164  oc get pods -n vllm-profiler
  1165  grep vllm-profiler *
- 1166  grep vllmbench-profiler *
- 1167  oc get pods -n vllmbench-profiler
- 1168  oc rsh vllmbench-profiler -n env-injector-68f59dbcf6-tznlt
- 1169  oc rsh -n vllmbench-profiler  env-injector-68f59dbcf6-tznlt
- 1170  oc -n vllmbench-profiler get pod -l app=env-injector -o name
- 1171  oc -n vllmbench-profiler exec --insecure-skip-tls-verify-backend -it deploy/env-injector -- ls -l /app
- 1172  oc -n vllmbench-profiler exec --insecure-skip-tls-verify-backend -it deploy/env-injector -- grep -n "TARGET_LABEL_KEY" /app/webhook.py
- 1173  oc -n vllmbench-profiler port-forward svc/env-injector 8443:443
- 1174  oc -n vllmbench-profiler run curl --rm -it --image=curlimages/curl -- curl -skI https://env-injector.vllmbench-profiler.svc/healthz
- 1175  oc -n vllmbench-profiler debug pod/env-injector-68f59dbcf6-tznlt
+ 1166  grep vllm-profiler *
+ 1167  oc get pods -n vllm-profiler
+ 1168  oc rsh vllm-profiler -n env-injector-68f59dbcf6-tznlt
+ 1169  oc rsh -n vllm-profiler  env-injector-68f59dbcf6-tznlt
+ 1170  oc -n vllm-profiler get pod -l app=env-injector -o name
+ 1171  oc -n vllm-profiler exec --insecure-skip-tls-verify-backend -it deploy/env-injector -- ls -l /app
+ 1172  oc -n vllm-profiler exec --insecure-skip-tls-verify-backend -it deploy/env-injector -- grep -n "TARGET_LABEL_KEY" /app/webhook.py
+ 1173  oc -n vllm-profiler port-forward svc/env-injector 8443:443
+ 1174  oc -n vllm-profiler run curl --rm -it --image=curlimages/curl -- curl -skI https://env-injector.vllm-profiler.svc/healthz
+ 1175  oc -n vllm-profiler debug pod/env-injector-68f59dbcf6-tznlt
  1176  ls
  1177  diff manifests.yaml manifests.yaml.bak
  1178  cat manifests.yaml
  1179  oc get MutatingWebhookConfiguration
  1180  oc get MutatingWebhookConfiguration env-injector-webhook
  1181* 
- 1182  oc get pods -n vllmbench-profiler
- 1183  oc edit pod -n vllmbench-profiler env-injector-68f59dbcf6-tznlt
+ 1182  oc get pods -n vllm-profiler
+ 1183  oc edit pod -n vllm-profiler env-injector-68f59dbcf6-tznlt
  1184  oc get sa -A
  1185  oc get sa -A | grep inje
  1186  oc get sa -A | more
@@ -888,34 +888,34 @@ EOF
  1189  grep env-injector *
  1190  cat patch-ca-bundle.sh
  1191  oc -n vllm-profiler get certs
- 1192  oc -n vllmbench-profiler get certs
- 1193  oc -n vllmbench-profiler get secrets
+ 1192  oc -n vllm-profiler get certs
+ 1193  oc -n vllm-profiler get secrets
  1194  env | grep KUB
  1195  ls
  1196  oc patch mutatingwebhookconfiguration env-injector-webhook --type=json -p '[{"op":"replace","path":"/webhooks/0/failurePolicy","value":"Fail"}]'
  1197  kubectl -n llm-d-inference-scheduler run envinj-test --image=registry.k8s.io/pause:3.9 --labels='llm-d.ai/inferenceServing=true' --restart=Never
  1198  export KUBECONFIG=/home/michey/llmd_aug2025/kubeconfig.llmd.8xh200
  1199  # 1) Have service-ca mint a serving cert into the secret used by the Deployment
- 1200  oc -n vllmbench-profiler annotate service env-injector   'service.beta.openshift.io/serving-cert-secret-name=env-injector-certs' --overwrite
+ 1200  oc -n vllm-profiler annotate service env-injector   'service.beta.openshift.io/serving-cert-secret-name=env-injector-certs' --overwrite
  1201  # Force regeneration
- 1202  oc -n vllmbench-profiler delete secret env-injector-certs --ignore-not-found
+ 1202  oc -n vllm-profiler delete secret env-injector-certs --ignore-not-found
  1203  # Wait for it to reappear
- 1204  oc -n vllmbench-profiler wait --for=condition=Established --timeout=30s secret/env-injector-certs || true
- 1205  oc -n vllmbench-profiler get secret env-injector-certs
+ 1204  oc -n vllm-profiler wait --for=condition=Established --timeout=30s secret/env-injector-certs || true
+ 1205  oc -n vllm-profiler get secret env-injector-certs
  1206  # 2) Inject the trusted CA bundle into the webhook config
  1207  oc annotate mutatingwebhookconfiguration env-injector-webhook   'service.beta.openshift.io/inject-cabundle=true' --overwrite
  1208  # Clear any custom caBundle so service-ca will fill it
  1209  oc patch mutatingwebhookconfiguration env-injector-webhook --type=json   -p '[{"op":"replace","path":"/webhooks/0/clientConfig/caBundle","value":""}]'
  1210  # 3) Restart the webhook pod to pick up the new cert
- 1211  oc -n vllmbench-profiler rollout restart deploy/env-injector
- 1212  oc -n vllmbench-profiler rollout status deploy/env-injector
+ 1211  oc -n vllm-profiler rollout restart deploy/env-injector
+ 1212  oc -n vllm-profiler rollout status deploy/env-injector
  1213  # 4) Verify CA bundle and service
  1214  oc get mutatingwebhookconfiguration env-injector-webhook -o jsonpath='{.webhooks[0].clientConfig.caBundle}{"\n"}' | wc -c
- 1215  oc -n vllmbench-profiler get endpoints env-injector -o wide
+ 1215  oc -n vllm-profiler get endpoints env-injector -o wide
  1216  cat manifests.yaml
  1217  oc delete -f manifests.yaml
  1218  cat patch-ca-bundle.sh 
- 1219  oc delete project vllmbench-profiler
+ 1219  oc delete project vllm-profiler
  1220  oc apply -f manifests.yaml
  1221  ls
  1222  bech gen-certs.sh 
@@ -940,14 +940,14 @@ EOF
  1241  oc apply -f manifests.yaml
  1242  bash gen-certs.sh 
  1243  bash patch-ca-bundle.sh 
- 1244  kubectl -n vllmbench-profiler logs deploy/env-injector -f
+ 1244  kubectl -n vllm-profiler logs deploy/env-injector -f
  1245  bash ./validate_webhook.sh 
  1246  DO_TEST=1 ./validate_webhook.sh 
- 1247  kubectl -n vllmbench-profiler logs deploy/env-injector -f
+ 1247  kubectl -n vllm-profiler logs deploy/env-injector -f
  1248  oc rsh -n vllbench-profiler env-injector-856cf46d4b-thm5n
- 1249  oc rsh -n vllmbench-profiler env-injector-856cf46d4b-thm5n
- 1250  kubectl -n vllmbench-profiler get deploy env-injector -o jsonpath='{.spec.template.spec.containers[0].env}{"\n"}'
- 1251  oc rsh -n vllmbench-profiler env-injector-856cf46d4b-thm5n
+ 1249  oc rsh -n vllm-profiler env-injector-856cf46d4b-thm5n
+ 1250  kubectl -n vllm-profiler get deploy env-injector -o jsonpath='{.spec.template.spec.containers[0].env}{"\n"}'
+ 1251  oc rsh -n vllm-profiler env-injector-856cf46d4b-thm5n
  1252  cat validate_webhook.sh 
  1253  oc delete -f manifests.yaml
  1254  podman build --runtime=runc -t vllmprofiler .
@@ -959,16 +959,16 @@ EOF
  1260  bash gen-certs.sh 
  1261  bash patch-ca-bundle.sh 
  1262  DO_TEST=1 ./validate_webhook.sh 
- 1263  kubectl -n vllmbench-profiler logs deploy/env-injector -f
- 1264  oc rsh -n vllmbench-profiler env-injector-856cf46d4b-thm5n
- 1265  oc rsh -n vllmbench-profiler deploy/env-injector
+ 1263  kubectl -n vllm-profiler logs deploy/env-injector -f
+ 1264  oc rsh -n vllm-profiler env-injector-856cf46d4b-thm5n
+ 1265  oc rsh -n vllm-profiler deploy/env-injector
  1266  cat manifests.yaml
  1267  oc delete -f manifests.yaml
  1268  oc apply -f manifests.yaml
  1269  bash gen-certs.sh 
  1270  bash patch-ca-bundle.sh 
  1271  DO_TEST=1 ./validate_webhook.sh 
- 1272  kubectl -n vllmbench-profiler logs deploy/env-injector -f
+ 1272  kubectl -n vllm-profiler logs deploy/env-injector -f
  1273  cat validate_webhook.sh 
  1274  DO_TEST=1 ./validate_webhook.sh 
  1275  oc get pods
@@ -981,7 +981,7 @@ EOF
  1282  oc get pod ms-pd-llm-d-modelservice-decode-6dd8d7bb5-9m2cp -o json | jq -r '.spec.containers[0]'
  1283  oc get pod ms-pd-llm-d-modelservice-decode-6dd8d7bb5-9m2cp -o json | jq -r '.spec.containers[0].env'
  1284  oc get pod ms-pd-llm-d-modelservice-decode-6dd8d7bb5-9m2cp -o json | jq -r '.spec.containers[0].env | .[]'
- 1285  kubectl -n vllmbench-profiler logs deploy/env-injector -f
+ 1285  kubectl -n vllm-profiler logs deploy/env-injector -f
  1286  vi webhook.py 
  1287  oc get pods
  1288  oc edit pod envinj-test-1764814484

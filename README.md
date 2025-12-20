@@ -35,17 +35,17 @@ kubectl apply -f manifests.yaml
 
 4) Generate certs and create secret:
 ```bash
-NS=vllmbench-profiler SVC=env-injector ./gen-certs.sh
+NS=vllm-profiler SVC=env-injector ./gen-certs.sh
 ```
 
 5) Patch the webhook `caBundle`:
 ```bash
-NS=vllmbench-profiler SVC=env-injector ./patch-ca-bundle.sh
+NS=vllm-profiler SVC=env-injector ./patch-ca-bundle.sh
 ```
 
 6) Verify the webhook:
 ```bash
-kubectl -n vllmbench-profiler get deploy env-injector
+kubectl -n vllm-profiler get deploy env-injector
 kubectl get mutatingwebhookconfiguration env-injector-webhook -o yaml | grep -n caBundle
 ```
 

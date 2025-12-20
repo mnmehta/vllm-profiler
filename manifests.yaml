@@ -1,19 +1,19 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: vllmbench-profiler
+  name: vllm-profiler
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: env-injector
-  namespace: vllmbench-profiler
+  namespace: vllm-profiler
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: env-injector
-  namespace: vllmbench-profiler
+  namespace: vllm-profiler
 spec:
   replicas: 1
   selector:
@@ -58,7 +58,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: env-injector
-  namespace: vllmbench-profiler
+  namespace: vllm-profiler
 spec:
   selector:
     app: env-injector
@@ -86,7 +86,7 @@ webhooks:
     scope: "*"
   clientConfig:
     service:
-      namespace: vllmbench-profiler
+      namespace: vllm-profiler
       name: env-injector
       path: /mutate
       port: 443

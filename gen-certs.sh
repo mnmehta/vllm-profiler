@@ -2,13 +2,13 @@
 set -euo pipefail
 
 # Usage:
-#   NS=vllmbench-profiler SVC=env-injector ./gen-certs.sh
+#   NS=vllm-profiler SVC=env-injector ./gen-certs.sh
 #
 # Creates a self-signed CA and server cert for ${SVC}.${NS}.svc,
 # then creates/updates secret ${SVC}-certs in that namespace and
 # prints the CA bundle for patching the webhook.
 
-NS="${NS:-vllmbench-profiler}"
+NS="${NS:-vllm-profiler}"
 SVC="${SVC:-env-injector}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT

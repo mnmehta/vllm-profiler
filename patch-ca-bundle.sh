@@ -2,12 +2,12 @@
 set -euo pipefail
 
 # Usage:
-#   NS=vllmbench-profiler SVC=env-injector ./patch-ca-bundle.sh
+#   NS=vllm-profiler SVC=env-injector ./patch-ca-bundle.sh
 #
 # Reads the CA from the ${SVC}-certs secret and patches the
 # MutatingWebhookConfiguration caBundle field.
 
-NS="${NS:-vllmbench-profiler}"
+NS="${NS:-vllm-profiler}"
 SVC="${SVC:-env-injector}"
 MWC="${MWC:-env-injector-webhook}"
 

@@ -5,7 +5,7 @@ set -euo pipefail
 # Defaults are tuned for this repo; override via env vars as needed.
 #
 # Environment variables:
-#   PROFILER_NS   - Namespace of the webhook (default: vllmbench-profiler)
+#   PROFILER_NS   - Namespace of the webhook (default: vllm-profiler)
 #   SVC           - Service name of the webhook (default: env-injector)
 #   MWC           - MutatingWebhookConfiguration name (default: env-injector-webhook)
 #   TARGET_NS     - Namespace of pods to mutate (default: llm-d-inference-scheduler)
@@ -16,9 +16,9 @@ set -euo pipefail
 #   DO_TEST       - If "1", create a test pod to validate injection, then clean up (default: 0)
 #
 # Example:
-#   PROFILER_NS=vllmbench-profiler TARGET_NS=llm-d-inference-scheduler DO_TEST=1 ./validate_webhook.sh
+#   PROFILER_NS=vllm-profiler TARGET_NS=llm-d-inference-scheduler DO_TEST=1 ./validate_webhook.sh
 
-PROFILER_NS="${PROFILER_NS:-vllmbench-profiler}"
+PROFILER_NS="${PROFILER_NS:-vllm-profiler}"
 SVC="${SVC:-env-injector}"
 MWC="${MWC:-env-injector-webhook}"
 TARGET_NS="${TARGET_NS:-llm-d-inference-scheduler}"
