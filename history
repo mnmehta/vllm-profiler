@@ -855,7 +855,7 @@ EOF
  1156  bash validate_webhook.sh 
  1157  vi validate_webhook.sh 
  1158  chmod +x validate_webhook.sh 
- 1159  DO_TEST=1 ./validate_webhook.sh 
+ 1159  DO_SIMPLE_TEST=1 ./validate_webhook.sh 
  1160  kubectl -n vllm-profiler logs deploy/env-injector -f
  1161  ls
  1162  vi webhook.py 
@@ -922,7 +922,7 @@ EOF
  1223  bash gen-certs.sh 
  1224  bash patch-ca-bundle.sh
  1225  cat validate_webhook.sh 
- 1226  DO_TEST=1 ./validate_webhook.sh 
+ 1226  DO_SIMPLE_TEST=1 ./validate_webhook.sh 
  1227  oc get pods -A -o wide | grep psap-llmd-h200-b6pv4-worker-2-fk4kq
  1228  oc get pods -A -o wide | grep psap-llmd-h200-b6pv4-worker-2-fk4kq | head 2
  1229  oc get pods -A -o wide | grep psap-llmd-h200-b6pv4-worker-2-fk4kq | head -5
@@ -942,7 +942,7 @@ EOF
  1243  bash patch-ca-bundle.sh 
  1244  kubectl -n vllm-profiler logs deploy/env-injector -f
  1245  bash ./validate_webhook.sh 
- 1246  DO_TEST=1 ./validate_webhook.sh 
+ 1246  DO_SIMPLE_TEST=1 ./validate_webhook.sh 
  1247  kubectl -n vllm-profiler logs deploy/env-injector -f
  1248  oc rsh -n vllbench-profiler env-injector-856cf46d4b-thm5n
  1249  oc rsh -n vllm-profiler env-injector-856cf46d4b-thm5n
@@ -958,7 +958,7 @@ EOF
  1259  ls
  1260  bash gen-certs.sh 
  1261  bash patch-ca-bundle.sh 
- 1262  DO_TEST=1 ./validate_webhook.sh 
+ 1262  DO_SIMPLE_TEST=1 ./validate_webhook.sh 
  1263  kubectl -n vllm-profiler logs deploy/env-injector -f
  1264  oc rsh -n vllm-profiler env-injector-856cf46d4b-thm5n
  1265  oc rsh -n vllm-profiler deploy/env-injector
@@ -967,10 +967,10 @@ EOF
  1268  oc apply -f manifests.yaml
  1269  bash gen-certs.sh 
  1270  bash patch-ca-bundle.sh 
- 1271  DO_TEST=1 ./validate_webhook.sh 
+ 1271  DO_SIMPLE_TEST=1 ./validate_webhook.sh 
  1272  kubectl -n vllm-profiler logs deploy/env-injector -f
  1273  cat validate_webhook.sh 
- 1274  DO_TEST=1 ./validate_webhook.sh 
+ 1274  DO_SIMPLE_TEST=1 ./validate_webhook.sh 
  1275  oc get pods
  1276  oc edit pod envinj-test-1764814484
  1277  ls
@@ -986,7 +986,7 @@ EOF
  1287  oc get pods
  1288  oc edit pod envinj-test-1764814484
  1289  oc -n openshift-kube-apiserver get pods -o name
- 1290  DO_TEST=1 ./validate_webhook.sh 
+ 1290  DO_SIMPLE_TEST=1 ./validate_webhook.sh 
  1291  oc -n openshift-kube-apiserver logs -l app=kube-apiserver -c kube-apiserver --since=10m | grep -i 'env-injector\\|webhook\\|admission' -A2 -B2
  1292  oc get project | grep api
  1293  oc -n openshift-kube-apiserver get pods
@@ -999,7 +999,7 @@ EOF
  1300  oc -n openshift-kube-apiserver logs kube-apiserver-psap-llmd-h200-b6pv4-master-0 | grep envinj
  1301  oc -n openshift-kube-apiserver get pods | grep apis
  1302  oc -n openshift-kube-apiserver logs kube-apiserver-psap-llmd-h200-b6pv4-master-0 | grep -i mutat
- 1303  DO_TEST=1 ./validate_webhook.sh 
+ 1303  DO_SIMPLE_TEST=1 ./validate_webhook.sh 
  1304  oc -n openshift-kube-apiserver logs kube-apiserver-psap-llmd-h200-b6pv4-master-0 | grep -i mutat
  1305  oc -n openshift-kube-apiserver logs kube-apiserver-psap-llmd-h200-b6pv4-master-0 | grep -i injec | tail
  1306  podman build --runtime=runc -t vllmprofiler .
@@ -1011,7 +1011,7 @@ EOF
  1312  oc apply -f manifests.yaml
  1313  bash gen-certs.sh 
  1314  bash patch-ca-bundle.sh 
- 1315  DO_TEST=1 ./validate_webhook.sh 
+ 1315  DO_SIMPLE_TEST=1 ./validate_webhook.sh 
  1316  oc -n openshift-kube-apiserver logs kube-apiserver-psap-llmd-h200-b6pv4-master-0 | grep -i injec | tail
  1317  oc get pods
  1318  oc edit pod envinj-test-1764816123

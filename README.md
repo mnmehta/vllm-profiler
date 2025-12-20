@@ -65,5 +65,7 @@ You should see the injected `INJECT_ENV_NAME` with value.
 - The webhook uses TLS from secret `env-injector-certs` mounted at `/tls`.
 - If the pod already has the env var, the webhook replaces its value.
 - The webhook only mutates when both `TARGET_NAMESPACE` and `TARGET_LABEL_KEY/TARGET_LABEL_VALUE` match; otherwise it allows without changes.
+- `validate_webhook.sh` can run a minimal validation pod when `DO_SIMPLE_TEST=1`.
+- `doit.sh` gates the post-deploy VLLM log/copy loop behind `DO_VLLM_TEST=1` (skipped by default).
 
 

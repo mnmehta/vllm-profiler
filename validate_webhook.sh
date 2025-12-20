@@ -13,10 +13,10 @@ set -euo pipefail
 #   LABEL_VAL     - Label value to match (default: true)
 #   INJECT_ENV    - Env var name expected to be injected (default: EXAMPLE_KEY)
 #   DO_PATCH      - If "1", attempt to patch caBundle using patch-ca-bundle.sh (default: 0)
-#   DO_TEST       - If "1", create a test pod to validate injection, then clean up (default: 0)
+#   DO_SIMPLE_TEST - If "1", create a simple test pod to validate injection, then clean up (default: 0)
 #
 # Example:
-#   PROFILER_NS=vllm-profiler TARGET_NS=llm-d-inference-scheduler DO_TEST=1 ./validate_webhook.sh
+#   PROFILER_NS=vllm-profiler TARGET_NS=llm-d-inference-scheduler DO_SIMPLE_TEST=1 ./validate_webhook.sh
 
 PROFILER_NS="${PROFILER_NS:-vllm-profiler}"
 SVC="${SVC:-env-injector}"
@@ -26,7 +26,7 @@ LABEL_KEY="${LABEL_KEY:-llm-d.ai/inferenceServing}"
 LABEL_VAL="${LABEL_VAL:-true}"
 INJECT_ENV="${INJECT_ENV:-EXAMPLE_KEY}"
 DO_PATCH="${DO_PATCH:-0}"
-DO_TEST="${DO_TEST:-0}"
+DO_SIMPLE_TEST="${DO_SIMPLE_TEST:-0}"
 
 have() { command -v "$1" >/dev/null 2>&1; }
 KC="kubectl"
@@ -101,8 +101,8 @@ echo "5) Verify target Deployment templates carry the label ($LABEL_KEY=$LABEL_V
 $KC -n "$TARGET_NS" get deploy -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.template.metadata.labels}{"\n"}{end}' | sed 's/^/- /'
 echo
 
-echo "6) Minimal path test (optional DO_TEST=$DO_TEST)"
-if [ "$DO_TEST" = "1" ]; then
+echo "6) Minimal path test (optional DO_SIMPLE_TEST=$DO_SIMPLE_TEST)"
+if [ "$DO_SIMPLE_TEST" = "1" ]; then
   TEST_POD="envinj-test-$(date +%s)"
   echo "- Creating test pod $TEST_POD in $TARGET_NS with label $LABEL_KEY=$LABEL_VAL"
   $KC -n "$TARGET_NS" run "$TEST_POD" \
@@ -120,9 +120,9 @@ if [ "$DO_TEST" = "1" ]; then
   fi
   echo
   echo "- Cleaning up test pod"
-  #$KC -n "$TARGET_NS" delete pod "$TEST_POD" --ignore-not-found >/dev/null 2>&1 || true
+  $KC -n "$TARGET_NS" delete pod "$TEST_POD" --ignore-not-found >/dev/null 2>&1 || true
 else
-  echo "- Skipping test pod creation. To enable, run with DO_TEST=1"
+  echo "- Skipping test pod creation. To enable, run with DO_SIMPLE_TEST=1"
 fi
 echo
 
@@ -130,7 +130,7 @@ echo "7) Summary"
 echo "- If caBundle length is 0, patch it (DO_PATCH=1 ./patch-ca-bundle.sh)."
 echo "- Ensure Service has endpoints (webhook pod Ready)."
 echo "- Ensure target Deployment templates include label ${LABEL_KEY}=${LABEL_VAL}."
-echo "- Create a labeled test pod (DO_TEST=1) and check env contains ${INJECT_ENV}."
+echo "- Create a labeled test pod (DO_SIMPLE_TEST=1) and check env contains ${INJECT_ENV}."
 echo "Done."
 
 
