@@ -1,0 +1,1026 @@
+  328  oc get pods -A -o json | grep  nvidia.com/gpu 
+  329  oc get pods -A -o json | grep  rdma/ib
+  330  exit
+  331  h200
+  332  . ../profile 
+  333  oc get pods
+  334  oc logs -f ms-inference-scheduling-llm-d-modelservice-decode-77f5d7b8sqj5q
+  335  oc get pods
+  336  vi /tmp/llmd/guides/inference-scheduling/ms-inference-scheduling/values.yaml 
+  337  oc get pods
+  338  oc logs gaie-inference-scheduling-epp-6fb4d8d997-k7wj7
+  339  oc logs -f gaie-inference-scheduling-epp-6fb4d8d997-k7wj7
+  340  oc get pods
+  341  lc logs -f ms-inference-scheduling-llm-d-modelservice-decode-77f5d7b8sqj5q
+  342  oc logs -f ms-inference-scheduling-llm-d-modelservice-decode-77f5d7b8sqj5q
+  343  k9s
+  344  ps
+  345  oc get projects | grep istio
+  346  ee
+  347  cleanup_istio 
+  348  oc get projects | grep istio
+  349  cat install_gateway 
+  350  ./install_gateway 2>&1 | tee error
+  351  vi error
+  352  oc get pods -A | grep ingress
+  353  oc project
+  354  h100
+  355  oc project
+  356  oc get pods
+  357  ./install_gateway 
+  358  oc get pods
+  359  os get pods
+  360  oc get pods
+  361  python install_llmd.py 
+  362  oc get pods -o wide
+  363  h200
+  364  oc get pods -A | grep ingress
+  365  oc get pods
+  366  cleanup_istio
+  367  ./install_gateway 
+  368  oc get pods
+  369  python install_llmd.py 
+  370  oc get pods
+  371  oc get deployments
+  372  oc delete deployment infra-inference-scheduling-inference-gateway-istio
+  373  oc get deployments
+  374  oc get pods
+  375  oc get pods -A | grep helm
+  376  ls /tmp/llmd/guides/
+  377  cat conf/default.yaml 
+  378  python install_llmd.py install.well_lit_path=guides/pd-disaggregation
+  379  ls /tmp/llmd/guides/pd-disaggregation/
+  380  oc project
+  381  env | KUBE
+  382  env | grep KUBE
+  383  ls -lart
+  384  vi disagg_performance_benchmark.sh
+  385  cat run_bench_pd.sh 
+  386  ls -lart
+  387  cat install_gateway 
+  388  HF_TOKEN=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 foo
+  389  chmod +x install_pd
+  390  HF_TOKEN=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 ./install_pd
+  391  h100
+  392  HF_TOKEN=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 ./install_pd
+  393  ls /tmp
+  394  ls -lart /tmp
+  395  oc get pods
+  396  h200
+  397  oc get pods
+  398  vi install_pd
+  399  h100
+  400  HF_TOKEN=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 ./install_pd
+  401  oc get pods
+  402  HF_TOKEN=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 ./install_pd
+  403  h200
+  404  HF_TOKEN=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 ./install_pd
+  405  oc get pods
+  406  h100
+  407  oc get pods
+  408  h200
+  409  oc get pods
+  410  ls -lart
+  411  cat run_bench_pd.sh 
+  412  ls conf/
+  413  history
+  414  cat install_pd
+  415  ls
+  416  ls -lart
+  417  cat run_bench_pd.sh
+  418  grep pd-disagg *
+  419  grep -r pd-disagg *
+  420  vi conf/llama70b.yaml 
+  421  cat override_ms_env.yaml 
+  422  vi override_ms_env.yaml 
+  423  vi /tmp/llmd/guides/pd-disaggregation/helmfile.yaml.gotmpl 
+  424  cat create_vllm_pods 
+  425  vi conf/default.yaml 
+  426  grep -ri adv_prefix
+  427  cat ../vllmpod.yaml 
+  428  cat charts/vllmpod/Chart.yaml 
+  429  cat charts/vllmpod/templates/pod.yaml 
+  430  cat charts/vllmpod/values.yaml 
+  431  vi ../vllmpod.yaml 
+  432  oc apply -v ../vllmpod.yaml 
+  433  oc apply -f ../vllmpod.yaml 
+  434  oc get pods
+  435  oc rsh vllm11-1
+  436  oc get pods
+  437  oc rsh ms-pd-llm-d-modelservice-decode-6dd8d7bb5-2thx9
+  438  oc delete pod vllm11-1
+  439  vi ../vllmpod.yaml 
+  440  oc apply -f ../vllmpod.yaml 
+  441  oc rsh vllm11-1
+  442  tmux attach -t llmd
+  443  k9s
+  444  which k9s
+  445  . ./profile
+  446  h100
+  447  k9s
+  448  ps
+  449  cd vllmbench/
+  450  vi run_rdma_perftest
+  451  oc project
+  452  vi run_rdma_perftest
+  453  oc get pods
+  454  vi run_rdma_perftest
+  455  chmod +x run_rdma_perftest 
+  456  ./run_rdma_perftest 
+  457  cat run_rdma_perftest 
+  458  ./run_rdma_perftest 
+  459  vi run_rdma_perftest
+  460  ./run_rdma_perftest 
+  461  ip enp233s0
+  462  ethtool enp233s0
+  463  ./run_rdma_perftest 
+  464  ls
+  465  ls ../vllmpod.yaml 
+  466  cp ../vllmpod.yaml .
+  467  ls -lart
+  468  ls ../charts/
+  469  ls ../charts/vllmpod/
+  470  ls
+  471  helm template charts/vllmpod
+  472  helm template charts
+  473  helm template charts/vllmpod
+  474  vi charts/vllmpod/templates/pod.yaml 
+  475  helm template charts/vllmpod --set nodeName=foo
+  476  vi charts/vllmpod/templates/pod.yaml 
+  477  vi charts/vllmpod/values.yaml 
+  478  oc get pods
+  479  oc delete pod vllm11-1 vllm11-1-2
+  480  helm template charts/vllmpod --set nodeName=foo
+  481  cat vllmpod.yaml 
+  482  ./create_vllm_pods 
+  483  oc get pods
+  484  ls -lart
+  485  ./run_rdma_perftest 
+  486  ./create_vllm_pods 
+  487  oc get pods
+  488  oc describe pod vllm11-1
+  489  oc get nodes
+  490  oc debug node/psap-gpu-xhnvx-worker-3-db7jp
+  491  ./create_vllm_pods 
+  492  oc get pods
+  493  cat vllmpod.yaml 
+  494  ./create_vllm_pods 
+  495  oc get pods
+  496  oc cp vllm11-1:/vllm-workspace/ep_kernels_workspace/DeepEP/log log
+  497  oc cp vllm11-1:/vllm-workspace/ep_kernels_workspace/DeepEP/log log2
+  498  vi get_gid_mapping
+  499  chmod +x get_gid_mapping 
+  500  ./get_gid_mapping 
+  501  vi get_gid_mapping 
+  502  ./get_gid_mapping 
+  503  vi get_gid_mapping 
+  504  ./get_gid_mapping 
+  505  vi get_gid_mapping 
+  506  ./get_gid_mapping 
+  507  vi get_gid_mapping 
+  508  ./get_gid_mapping 
+  509  vi get_gid_mapping 
+  510  ./get_gid_mapping 
+  511  vi get_gid_mapping 
+  512  ./get_gid_mapping 
+  513  vi get_gid_mapping 
+  514  ./get_gid_mapping 
+  515  python
+  516  vi get_gid_mapping 
+  517  ./get_gid_mapping 
+  518  vi get_gid_mapping 
+  519  ./get_gid_mapping 
+  520  python 
+  521  vi dist_patch
+  522  vi dist_patch.py
+  523  python
+  524  vi dist_patch.py
+  525  python dist_patch.py 
+  526  vi dist_patch.py
+  527  python dist_patch.py 
+  528  vi dist_patch.py
+  529  python dist_patch.py 
+  530  cat dist_patch.py 
+  531  vi dist_patch.py
+  532  python dist_patch.py 
+  533  vi dist_patch.py
+  534  oc cp vllm11-1:/vllm-workspace/ep_kernels_workspace/DeepEP/log log3
+  535  cat get_gid_mapping 
+  536  ./get_gid_mapping
+  537  vi get_gid_mapping 
+  538  ./get_gid_mapping 
+  539  vi get_gid_mapping 
+  540  ./get_gid_mapping 
+  541  vi get_gid_mapping 
+  542  bash -x ./get_gid_mapping 
+  543  vi get_gid_mapping 
+  544  bash -x ./get_gid_mapping 
+  545  vi dist_patch.py 
+  546  python dist_patch.py 
+  547  cat dist_patch.py 
+  548  oc cp vllm11-1:/vllm-workspace/ep_kernels_workspace/DeepEP/log log4
+  549  e
+  550  ee
+  551  oc project
+  552  ls -lart
+  553  cat get_gid_mapping 
+  554  ./get_gid_mapping 
+  555  vi dist_patch.py 
+  556  python dist_patch.py 
+  557  oc cp vllm11-1:/vllm-workspace/ep_kernels_workspace/DeepEP/log log5
+  558  ls -lart
+  559  cat rdma_bw_sweep 
+  560  ./rdma_bw_sweep 
+  561  vi rdma_bw_sweep 
+  562  ./rdma_bw_sweep 
+  563  ls
+  564  ls -lart
+  565  cat run_rdma_perftest 
+  566  ls
+  567  ./run_rdma_perftest 
+  568  ls -lart
+  569  cat dist_patch.py
+  570  oc get nodes -o wide
+  571  oc get pods -n openshift-console
+  572  oc get pods
+  573  env | grep KUB
+  574  h200
+  575  oc get pods
+  576  ls -lart
+  577  cat install_gateway 
+  578  oc get pods
+  579  cd /tmp/llmd/guides/prereq/gateway-provider/
+  580  ls
+  581  vi istio.helmfile.yaml 
+  582  cp istio.helmfile.yaml istio.helmfile.yaml.bak
+  583  vi istio.helmfile.yaml
+  584  oc get projects
+  585  oc get projects | grep ai
+  586  oc get projects | grep istio
+  587  oc get projects | grep service
+  588  ls
+  589  cp istio.helmfile.yaml.bak istio.helmfile.yaml
+  590  cd -
+  591  ls -lart
+  592  vi install_pd 
+  593  ./install_gateway 
+  594  oc get pods
+  595  ./install_gateway ee
+  596  e
+  597  ee
+  598  cleanup_instio
+  599  cleanup_istio
+  600  ./install_gateway ee
+  601  ./install_
+  602  ./install_pd
+  603  ./install_pd --decode2-prefill0
+  604  oc rsh vllm11-1
+  605  ./install_pd 
+  606  oc get pods
+  607  oc rsh vllm11-1
+  608  oc rsh vllm11-1 nvidia-smi
+  609  oc rsh vllm11-1 nvidia-smi dmon --gpu-metrics 20,21,60,61
+  610  oc rsh vllm11-1 nvidia-smi dmon --gpm-metrics 20,21,60,61
+  611  nvidia-smi
+  612  oc rsh vllm11-1 
+  613  ./install_pd 
+  614  oc rsh vllm11-1 nvidia-smi dmon --gpm-metrics 20,21,60,61
+  615  oc get pods
+  616  oc get pods -A | grep grafana
+  617  helm list
+  618  helm delete gaie-pd
+  619  helm delete gaie-pd infra-pd ms-pd
+  620  helm delete  infra-pd ms-pd
+  621  oc get pods
+  622  helm delete gaie-pd infra-pd ms-pd
+  623  ./install_pd --decode2-prefill0
+  624  helm delete gaie-pd infra-pd ms-pd
+  625  ls -lart
+  626  python install_llmd.py 
+  627  help list
+  628  helm list
+  629  oc get gateway
+  630  cat vllmpod.yaml 
+  631  oc get nodes
+  632  . ./profile 
+  633  h100
+  634  oc get nodes
+  635  vi vllmpod.yaml 
+  636  oc apply -f vllmpod.yaml 
+  637  vi vllmpod.yaml 
+  638  oc apply -f vllmpod.yaml 
+  639  oc get pods -o wide
+  640  oc edit pod          
+  641  oc rsh vllm11-1-2
+  642  oc get pods -A | grep ep
+  643  oc get pods -A -o wide| grep ep 
+  644  cat vllmpod.yaml 
+  645  oc rsh -n llm-d-wide-ep a-aye-benchmark
+  646  oc rsh vllm11-1-2
+  647  oc rsh -n llm-d-wide-ep a-aye-benchmark
+  648  oc get pods -A -o wide| grep ep 
+  649  oc rsh -n llm-d-wide-ep wide-ep-llm-d-decode-0
+  650  oc rsh vllm11-1-2
+  651  oc edit pod -n llm-d-wide-ep wide-ep-llm-d-decode-0
+  652  oc get network-attachment-definitions -n llm-d-wide-ep
+  653  oc get network-attachment-definitions -n llm-d-wide-ep dhcp-host-device-port-1 -o yaml
+  654  oc get network-attachment-definitions -n llm-d-wide-ep dhcp-network-port-1 -o yaml
+  655  oc edit pod -n llm-d-wide-ep wide-ep-llm-d-decode-0
+  656  oc rsh pod -n llm-d-wide-ep wide-ep-llm-d-decode-0
+  657  oc rsh  -n llm-d-wide-ep wide-ep-llm-d-decode-0
+  658  oc rsh vllm11-1-2
+  659  bash
+  660  oc rsh vllm11-1-2
+  661  ls
+  662  ls -lart
+  663  h200
+  664  . ./profile 
+  665  k9s
+  666  h200
+  667  k9s
+  668  h100
+  669  k9s
+  670  h200
+  671  k9s
+  672  h100
+  673  k9s
+  674  h200
+  675  k9s
+  676  . "/home/michey/.cursor-server/bin/60d42bed27e5775c43ec0428d8c653c49e58e260/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh"
+  677  . ./profile 
+  678  h100
+  679  oc get pods
+  680  oc get pods -A | grep wide
+  681  oc get pods -A | grep llm
+  682  oc get pods -A | grep dag
+  683  oc get nad
+  684  oc get networkattachmentdefinition
+  685  oc get networkattachment
+  686  oc get crd
+  687  oc get crd | grep netw
+  688  oc get network-attachment-definitions.k8s.cni.cncf.io
+  689  oc get network-attachment-definitions.k8s.cni.cncf.io -A
+  690  oc get network-attachment-definitions.k8s.cni.cncf.io -n llm-d-wide-ep dhcp-host-device-port-1
+  691  oc get network-attachment-definitions.k8s.cni.cncf.io -n llm-d-wide-ep dhcp-host-device-port-1 -o yaml
+  692  oc get network-attachment-definitions.k8s.cni.cncf.io -n llm-d-wide-ep dhcp-network-port-1  -o yaml
+  693  oc get pods -n llm-d-wide-ep 
+  694  oc edit pods -n llm-d-wide-ep a-aye-benchmark
+  695  oc rsh -n llm-d-wide-ep a-aye-benchmark
+  696  oc get pods -A | grep sbr
+  697  oc get network-attachment-definitions.k8s.cni.cncf.io -A
+  698  oc get network-attachment-definitions.k8s.cni.cncf.io -n fine-tuning-testing subnet-port-01  -o yaml
+  699  oc get network-attachment-definitions.k8s.cni.cncf.io -n fine-tuning-testing subnet-rdma-port-01  -o yaml
+  700  oc get network-attachment-definitions.k8s.cni.cncf.io -n llm-d-wide-ep dhcp-host-device-port-1 -o yaml
+  701  oc get network-attachment-definitions.k8s.cni.cncf.io -n llm-d-wide-ep dhcp-host-device-port-2 -o yaml
+  702  oc get network-attachment-definitions.k8s.cni.cncf.io -A
+  703  oc get network-attachment-definitions.k8s.cni.cncf.io -n multi-node-inference subnet-rdma-port-01  -o yaml
+  704  oc get pods -n multi-node-inference
+  705  oc get pods
+  706  vi vllmpod.yaml 
+  707  oc delete pod vllm11-1
+  708  oc apply -f vllm11-1
+  709  oc apply -f vllmpod.yaml 
+  710  oc get pods
+  711  oc rsh vllm11-1
+  712  vi vllmpod.yaml 
+  713  oc delete pod vllm11-1
+  714  oc apply -f vllmpod.yaml 
+  715  vi vllmpod.yaml 
+  716  oc apply -f vllmpod.yaml 
+  717  oc get pods
+  718  oc describe pod vllm11-1
+  719  kubectl create secret docker-registry nvcr-secret   --docker-server=nvcr.io   --docker-username='$oauthtoken'   --docker-password='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’'   --docker-email='mimehta@redhat.com'
+  720  vi vllmpod.yaml 
+  721  oc apply -f vllmpod.yaml 
+  722  oc get pods
+  723  oc delete pod vllm11-1
+  724  oc apply -f vllmpod.yaml 
+  725  oc get pods
+  726  oc describe pod imagePullSecrets:
+  727  - name: nvcr-secret
+  728  oc describe pod vllm11-1
+  729  kubectl get secret nvcr-secret -n default
+  730  oc get secrets
+  731  kubectl get secret nvcr-secret 
+  732  kubectl get secret nvcr-secret -o json
+  733  kubectl create secret docker-registry nvcr-secret   --docker-server=nvcr.io   --docker-username='$oauthtoken'   --docker-password='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’'   --docker-email='mimehta@redhat.com'
+  734  oc delete secret nvcr-secret
+  735  kubectl create secret docker-registry nvcr-secret   --docker-server=nvcr.io   --docker-username='$oauthtoken'   --docker-password='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’ \
+  736    --docker-email='mimehta@redhat.com'
+  737  set -o vi
+  738  kubectl create secret docker-registry nvcr-secret   --docker-server=nvcr.io   --docker-username='$oauthtoken'   --docker-password='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’ \
+  739    --docker-email='mimehta@redhat.com'
+  740  kubectl create secret docker-registry nvcr-secret   --docker-server=nvcr.io   --docker-username='$oauthtoken'   --docker-password='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’ \
+  741    --docker-email='mimehta@redhat.com'
+  742  kubectl create secret docker-registry nvcr-secret   --docker-server=nvcr.io   --docker-username='$oauthtoken'   --docker-password='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’ \
+  743    --docker-email='mimehta@redhat.com'
+  744  kubectl create secret docker-registry nvcr-secret   --docker-server=nvcr.io   --docker-username='$oauthtoken'   --docker-password=”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”   --docker-email='mimehta@redhat.com'
+  745  oc delete pod vllm11-1
+  746  oc apply -f vllmpod.yaml 
+  747  oc get pods
+  748  oc describe pod vllm11-1
+  749  podman login nvcr.io
+  750  oc edit pod vllm11-1
+  751  kubectl get pod vllm11-1 -o yaml | grep -A5 imagePullSecrets
+  752  kubectl get serviceaccount
+  753  kubectl get secret | grep nvcr
+  754  kubectl get secret nvcr-secret -o yaml
+  755  oc delete pod vllm11-1
+  756  oc delete secret nvcr-secret
+  757  kubectl create secret docker-registry nvcr-secret   --docker-server=nvcr.io   --docker-username='$oauthtoken'   --docker-password=’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’   --docker-email='mimehta@redhat.com'
+  758  oc apply -f vllmpod.yaml 
+  759  oc get pods
+  760  oc describe pod vllm11-1
+  761  kubectl get pod vllm11-1 -o yaml | grep -A5 imagePullSecrets
+  762  kubectl get serviceaccount
+  763  kubectl get secret | grep nvcr
+  764  kubectl get secret nvcr-secret -o yaml
+  765  kubectl get secret nvcr-secret -n llm-d-inference-scheduler   -o jsonpath='{.data.\.dockerconfigjson}' | base64 -d
+  766  kubectl get secret nvcr-secret -n llm-d-inference-scheduler   -o jsonpath='{.data.\.dockerconfigjson}' | base64 -d | python -mjson.tool
+  767  vi foo
+  768  oc delete secret nvcr-secret
+  769  bash foo
+  770  kubectl get secret nvcr-secret -n llm-d-inference-scheduler   -o jsonpath='{.data.\.dockerconfigjson}' | base64 -d | python -mjson.tool
+  771  oc get pods
+  772  oc delete pod vllm11-1
+  773  oc apply -f vllmpod.yaml 
+  774  oc get pods
+  775  oc describe pod vllm11-1
+  776  oc delete pod vllm11-1
+  777  vi vllmpod.yaml 
+  778  oc apply -f vllmpod.yaml 
+  779  oc describe pod vllm11-1
+  780  cat vllmpod.yaml 
+  781  vi vllmpod.yaml 
+  782  kubectl get pod vllm11-1 -o yaml | grep -A5 imagePullSecrets
+  783  kubectl get serviceaccount
+  784  kubectl get secret | grep nvcr
+  785  kubectl get secret nvcr-secret -o yaml
+  786  kubectl get secret nvcr-secret -n llm-d-inference-scheduler   -o jsonpath='{.data.\.dockerconfigjson}' | base64 -d | python -mjson.tool
+  787  oc delete pod vllm11-1
+  788  oc apply -f vllmpod.yaml 
+  789  oc describe pod vllm11-1
+  790  oc delete pod vllm11-1
+  791  kubectl get serviceaccount
+  792  vi vllmpod.yaml 
+  793  oc apply -f vllmpod.yaml 
+  794  oc describe pod vllm11-1
+  795  cat vllmpod.yaml 
+  796  oc describe pod vllm11-1
+  797  oc rsh vllm11-1
+  798  oc delete pod vllm11-1
+  799  vi vllmpod.yaml 
+  800  oc apply -f vllmpod.yaml 
+  801  oc rsh vllm11-1
+  802  oc get pods
+  803  oc rsh vllm11-1
+  804  oc get pods
+  805  oc rsh vllm11-1
+  806  cd vllmbench/
+  807  ls -lart
+  808  ./rdma_bw_sweep 
+  809  ls -lart
+  810  gh
+  811  gh repo list
+  812  gh gist list
+  813  ls -lart
+  814  gh girst list
+  815  gh gist list
+  816  ls -lart
+  817  gh list
+  818  gh gist list
+  819  ls -lart
+  820  gh gist --help
+  821  gh gist list
+  822  gh gist clone 9b30cbde2e348859f36192a714f28e95
+  823  ls -lart
+  824  ls 9b30cbde2e348859f36192a714f28e95/
+  825  cd 9b30cbde2e348859f36192a714f28e95/
+  826  ls -a
+  827  git status
+  828  vi rdma_
+  829  vi rdma_gist_README.md 
+  830  git status
+  831  git add rdma_gist_README.md 
+  832  git push
+  833  git commit
+  834  git push
+  835  gh gist list
+  836  ls -lart
+  837  ls ..
+  838  ls -lart
+  839  cd ..
+  840  ls -lart
+  841  ls 9b30cbde2e348859f36192a714f28e95/
+  842  diff get_gid_mapping  9b30cbde2e348859f36192a714f28e95/
+  843  diff rdma_bw_sweep 9b30cbde2e348859f36192a714f28e95/
+  844  cat dist_patch.py 
+  845  ls -lart
+  846  mv run_rdma_perftest log log2 log3 log4 dist_patch.py 9b30cbde2e348859f36192a714f28e95
+  847  ls -lart
+  848  rm get_gid_mapping rdma_bw_sweep 
+  849  mv log5 9b30cbde2e348859f36192a714f28e95/
+  850  ls
+  851  ls -lart
+  852  cd 9b30cbde2e348859f36192a714f28e95/
+  853  git status
+  854  vi dist_patch.py 
+  855  mkdir logs
+  856  mv log log2 log3 log4 log5 logs
+  857  ls logs
+  858  ls
+  859  cp ../create_vllm_pods .
+  860  cp -r ../charts/ .
+  861  ls
+  862  pwd
+  863  git status
+  864  git commit -a
+  865  git push
+  866  git status
+  867  git add charts create_vllm_pods dist_patch.py logs run_rdma_perftest 
+  868  git status
+  869  git commit
+  870  git push
+  871  ls
+  872  ls logs/
+  873  ls -R charts/
+  874  ls
+  875  ls logs
+  876  ls
+  877  ls -l
+  878  vi logs__log 
+  879  cat rebuild_chart.sh 
+  880  cat create_vllm_pods 
+  881  git sttaus
+  882  git status
+  883  git add rdma_gist_README.md logs__log rebuild_chart.sh vllmpod_Chart.yaml vllmpod_templates__helpers.tpl vllmpod_templates__pod.yaml vllmpod_values.yaml
+  884  git status
+  885  git add create_vllm_pods
+  886  git commit
+  887  git push
+  888  git status
+  889  git push
+  890  git diff
+  891  git add rebuild_chart.sh 
+  892  git commit
+  893  git push
+  894  git sttaus
+  895  git status
+  896  ls
+  897  git log
+  898  git pull
+  899  git status
+  900  git log
+  901  pwd
+  902  cd ..
+  903  ls
+  904  rm -rf 9b30cbde2e348859f36192a714f28e95/
+  905  oc get pods
+  906  oc delete pod vllm11-1 vllm11-1-2
+  907  ls
+  908  git status
+  909  rm foo
+  910  grep -r wlp
+  911  grep -ri well_lit
+  912  h200
+  913  oc get pods
+  914  cd /tmp/llmd/
+  915  ls
+  916  ls guides/
+  917  git status
+  918  cd /tmp
+  919  ls -lart
+  920  rm -rf vllmpod_chart/
+  921  cd llmd/
+  922  ls
+  923  cd guides/
+  924  ls
+  925  find . -mtime -10
+  926  pwd
+  927  cd ..
+  928  find . -mtime -10
+  929  rm -rf llmd/
+  930  h
+  931  ho
+  932  ee
+  933  cd vllmbench/l
+  934  cd vllmbench/
+  935  vi conf/default.yaml 
+  936  python install_llmd.py 
+  937  h100
+  938  oc get pods
+  939  oc get pods -n istio-system
+  940  k9s
+  941  h200
+  942  k9s
+  943  ls -lart
+  944  rm -rf 9b30cbde2e348859f36192a714f28e95/
+  945  cat create_vllm_pods 
+  946  ls -lart
+  947  h200
+  948  oc get gateway
+  949  oc get pods
+  950  oc rsh infra-pd-inference-gateway-istio-5d8cd7b9c-ttgtz
+  951  oc get gateway
+  952  oc get pods
+  953  ls -lart /tm
+  954  ls -lart /tmp
+  955  vi /tmp/llm-d-pd-241453/guides/pd-disaggregation/ms-pd/values.yaml 
+  956  yq
+  957  vi /tmp/llm-d-pd-241453/guides/pd-disaggregation/ms-pd/values.yaml 
+  958  jq
+  959  yq
+  960  vi /tmp/llm-d-pd-241453/guides/pd-disaggregation/ms-pd/values.yaml 
+  961  ls -lart
+  962  ls -lart /tmp
+  963  vi /tmp/llm-d-pd-263464/guides/pd-disaggregation/ms-pd/values
+  964  vi /tmp/llm-d-pd-263464/guides/pd-disaggregation/ms-pd/values.yaml 
+  965  oc get pods
+  966  oc rsh vllm11-1
+  967  ls
+  968  vi /tmp/llm-d-pd-263464/guides/pd-disaggregation/ms-pd/values.yaml 
+  969  ls
+  970  ls ..
+  971  ls -lart
+  972  vi llm-d-modelservice/Chart.yaml 
+  973  grep -r routes llm-d-modelservice
+  974  grep -r route llm-d-modelservice
+  975  grep -r sidecar llm-d-modelservice
+  976  vi llm-d-modelservice/values.schema.json
+  977  grep -ri requests llm-d-modelservice
+  978  vi llm-d-modelservice/charts/common/templates/_resources.tpl
+  979  ls llm-d-modelservice/charts/common/templates/
+  980  vi llm-d-modelservice/charts/common/templates/_images.tpl 
+  981  vi llm-d-modelservice/charts/common/templates/*
+  982  grep sidecar llm-d-modelservice/charts/common/templates/*
+  983  grep -r sidecar llm-d-modelservice/charts/common/templates/*
+  984  grep -r sidecar llm-d-modelservice/charts/common/
+  985  grep -r sidecar llm-d-modelservice/charts
+  986  grep -r sidecar llm-d-modelservice/
+  987  grep -rl sidecar llm-d-modelservice/
+  988  vi llm-d-modelservice/values.yaml
+  989  grep -r debugLevel
+  990  vi llm-d-modelservice/templates/_helpers.tpl
+  991  helm list
+  992  helm delete gaie-inference-scheduling infra-inference-scheduling ms-inference-scheduling
+  993  oc get pods
+  994  oc rsh vllm11-1 nvidia-smi
+  995  . "/home/michey/.cursor-server/bin/60d42bed27e5775c43ec0428d8c653c49e58e260/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh"
+  996  . ./profile
+  997  direnv
+  998  . ./profile
+  999  oc get gateway
+ 1000  oc get pods -A | grep istio
+ 1001  helm list
+ 1002  helm delete gaie-pd infra-pd ms-pd
+ 1003  kubectl delete validatingadmissionpolicybinding deny-servicemeshoperator3-binding --ignore-not-found
+ 1004  kubectl delete validatingadmissionpolicy deny-servicemeshoperator3 --ignore-not-found
+ 1005  oc get pods -A | grep istio
+ 1006  oc delete project istio-system
+ 1007  oc get pods -A | grep istio
+ 1008  oc get crd | grep istio
+ 1009  oc get crd | grep network
+ 1010  oc get crd | sed '\.x-//' | grep netw
+ 1011  oc get crd | sed '/\.x-//' | grep netw
+ 1012  oc get crd | sed 's/\.x-//' | grep netw
+ 1013  oc get crd | sed 's/\.x-//' | grep netw | uniq -c
+ 1014  oc get crd | sed 's/\.x-/./' | grep netw | uniq -c
+ 1015  oc get crd | sed 's/\.x-/./' | awk '{print $1}' | grep netw | uniq -c
+ 1016  oc get crd | sed 's/\.x-/./' | awk '{print $1}'  | uniq -c
+ 1017  oc get crd | sed 's/\.x-/./' | awk '{print $1}'  | uniq -c | grep 2
+ 1018  ls -lart
+ 1019  cd vllmbench/
+ 1020  ls
+ 1021  cleanup_istio 
+ 1022  ./install_gateway 
+ 1023  ./install_pd
+ 1024  cd /tmp/llmd
+ 1025  git status
+ 1026  git log | more
+ 1027  git tag
+ 1028  cd -
+ 1029  vi install_gateway 
+ 1030  oc get pods -A | grep istio
+ 1031  kubectl apply -f - <<'EOF'
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+ name: deny-servicemeshoperator3
+spec:
+ matchConstraints:
+   resourceRules:
+   - apiGroups: ["operators.coreos.com"]
+     apiVersions: ["v1alpha1"]
+     operations: ["CREATE","UPDATE"]
+     resources: ["subscriptions"]
+     scope: "Namespaced"
+ validations:
+ - expression: '!(object.metadata.name == "servicemeshoperator3" && request.namespace == "openshift-operators")'
+   message: "Blocking servicemeshoperator3 subscription in openshift-operators"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+ name: deny-servicemeshoperator3-binding
+spec:
+ policyName: deny-servicemeshoperator3
+ validationActions:
+ - Deny
+EOF
+
+ 1032  oc get pods -A | grep istio
+ 1033  oc delete subscription servicemeshoperator3 -n openshift-operators --ignore-not-found
+ 1034  oc get installplan -n openshift-operators -o name | grep -i servicemesh || true
+ 1035  oc get installplan -n openshift-operators -o name | grep -i servicemesh | xargs -r oc delete -n openshift-operators
+ 1036  oc get csv -n openshift-operators -o name | grep -i servicemeshoperator3 | xargs -r oc delete -n openshift-operators
+ 1037  oc get csv -A -o name | grep -i servicemeshoperator3 | xargs -r oc delete
+ 1038  oc -n openshift-ingress delete deploy istiod-openshift-gateway
+ 1039  for r in mutatingwebhookconfiguration validatingwebhookconfiguration; do   oc get "$r" -o name | grep -E 'istio|istiod|openshift-gateway' | xargs -r oc delete; done
+ 1040  oc get pods -n openshift-ingress | grep -i istio || echo "No istio pods in openshift-ingress"
+ 1041  helm list
+ 1042  ./cleanup_istio
+ 1043  cleanup_istio
+ 1044  ./install_gateway 
+ 1045  ls
+ 1046  ./install_pd
+ 1047  oc get pods
+ 1048  oc log ms-pd-llm-d-modelservice-decode-6dd8d7bb5-hmrnn > foo
+ 1049  oc logs ms-pd-llm-d-modelservice-decode-6dd8d7bb5-hmrnn > foo
+ 1050  vi foo
+ 1051  oc get pods
+ 1052  helm list
+ 1053  helm delete gaie-pd infra-pd ms-pd
+ 1054  oc get nodes
+ 1055  oc debug node psap-llmd-h200-gpu-qdndv
+ 1056  oc debug node/psap-llmd-h200-gpu-qdndv
+ 1057  oc get pods -A
+ 1058  oc get pods -A | grep -v ^openshift
+ 1059  oc get pods -n downstream-llm-d
+ 1060  oc delete pod -n downstream-llm-d test-deployment-kserve-98fdf7dc-96ww5 test-deployment-kserve-router-scheduler-8565b5c687-k9d7k
+ 1061  oc get pods -n downstream-llm-d
+ 1062  oc get llmi -A
+ 1063  oc get llminference -A
+ 1064  oc get crd | grep -i llm
+ 1065  oc get  -A
+ 1066  oc get llminferenceserviceconfigs.serving.kserve.io -A
+ 1067  oc get llminferenceservices.serving.kserve.io -A
+ 1068  oc delete llminferenceservices.serving.kserve.io -n downstream-llm-d test-deployment
+ 1069  ./install_pd
+ 1070  mkdir profiler
+ 1071  pwd
+ 1072  rg
+ 1073  rg -i ../.. mutatingadmission
+ 1074  cd ../..
+ 1075  ls
+ 1076  pwd
+ 1077  rg -i mutatingadmission
+ 1078  rg -i mutatingadmission -l
+ 1079  rg -i mutatingadmission -l | grep -v ^go
+ 1080  ho
+ 1081  cd vllmbench/
+ 1082  cd profileo
+ 1083  cd profiler
+ 1084  ls
+ 1085  cat README.md 
+ 1086  ls
+ 1087  cat Dockerfile 
+ 1088  cat requirements.txt 
+ 1089  podman build .
+ 1090  podman image list
+ 1091  podman image delete 4242b138cb28
+ 1092  podman rmi 4242b138cb28
+ 1093  podman image list
+ 1094  podman build --runtime=runc .
+ 1095  podman image list | head
+ 1096  podman rmi 094011826335
+ 1097  vi Dockerfile 
+ 1098  podman tag 094011826335 quay.io/mimehta/vllmprofiler
+ 1099  podman images --no-trunc | head
+ 1100  podman image list
+ 1101  podman build .
+ 1102  podman build --runtime=runc .
+ 1103  podman tag cdd114cbd74372ec623be426e8908d31e4146f20078bd7ca759a74acb53dddf7 quay.io/mimehta/vllmprofiler
+ 1104  podman images | head
+ 1105  podman push quay.io/mimehta/vllmprofiler:latest
+ 1106  ls
+ 1107  oc get pods
+ 1108  cat manifests.yaml 
+ 1109  oc get pods
+ 1110  oc project
+ 1111  vi manifests.yaml 
+ 1112  ls
+ 1113  vi webhook.py 
+ 1114  oc edit pod ms-pd-llm-d-modelservice-prefill-574bddb8b7-znd7k
+ 1115  podman images --no-trunc | head
+ 1116  podman rmi sha256:cdd114cbd74372ec623be426e8908d31e4146f20078bd7ca759a74acb53dddf7
+ 1117  podman build --help
+ 1118  podman build -t vllmprofiler .
+ 1119  podman build --runtime=runc -t vllmprofiler .
+ 1120  podman tag localhost/vllmprofiler quay.io/mimehta/vllmprofiler
+ 1121  podman push quay.io/mimehta/vllmprofiler:latest
+ 1122  oc edit pod ms-pd-llm-d-modelservice-prefill-574bddb8b7-znd7k
+ 1123  oc get pods  -l llm-d.ai/inferenceServing="true"
+ 1124  vi manifests.yaml 
+ 1125  cat manifests.yaml 
+ 1126  oc apply -f manifests.yaml 
+ 1127  vi manifests.yaml 
+ 1128  oc apply -f manifests.yaml n
+ 1129  oc apply -f manifests.yaml 
+ 1130  oc delete -f manifests.yaml 
+ 1131  vi manifests.yaml 
+ 1132  oc edit pod ms-pd-llm-d-modelservice-prefill-574bddb8b7-znd7k
+ 1133  vi manifests.yaml 
+ 1134  oc project
+ 1135  vi manifests.yaml 
+ 1136  oc apply -f manifests.yaml 
+ 1137  cat manifests.yaml 
+ 1138  ls
+ 1139  cat gen-certs.sh
+ 1140  ls
+ 1141  bash gen-certs.sh 
+ 1142  cat gen-certs.sh 
+ 1143  ls
+ 1144  cat patch-ca-bundle.sh 
+ 1145  cat manifests.yaml manifests.yaml.bak
+ 1146  cp manifests.yaml manifests.yaml.bak
+ 1147  oc apply -f manifests.yaml 
+ 1148  ls
+ 1149  oc apply -f manifests.yaml 
+ 1150  bash gen-certs.sh 
+ 1151  bash patch-ca-bundle.sh
+ 1152  oc get pods
+ 1153  kubectl -n vllmbench-profiler logs deploy/env-injector -f
+ 1154  oc get pods vllmbench-profiler
+ 1155  oc get pods -n vllmbench-profiler
+ 1156  bash validate_webhook.sh 
+ 1157  vi validate_webhook.sh 
+ 1158  chmod +x validate_webhook.sh 
+ 1159  DO_TEST=1 ./validate_webhook.sh 
+ 1160  kubectl -n vllmbench-profiler logs deploy/env-injector -f
+ 1161  ls
+ 1162  vi webhook.py 
+ 1163  oc get pods
+ 1164  oc get pods -n vllm-profiler
+ 1165  grep vllm-profiler *
+ 1166  grep vllmbench-profiler *
+ 1167  oc get pods -n vllmbench-profiler
+ 1168  oc rsh vllmbench-profiler -n env-injector-68f59dbcf6-tznlt
+ 1169  oc rsh -n vllmbench-profiler  env-injector-68f59dbcf6-tznlt
+ 1170  oc -n vllmbench-profiler get pod -l app=env-injector -o name
+ 1171  oc -n vllmbench-profiler exec --insecure-skip-tls-verify-backend -it deploy/env-injector -- ls -l /app
+ 1172  oc -n vllmbench-profiler exec --insecure-skip-tls-verify-backend -it deploy/env-injector -- grep -n "TARGET_LABEL_KEY" /app/webhook.py
+ 1173  oc -n vllmbench-profiler port-forward svc/env-injector 8443:443
+ 1174  oc -n vllmbench-profiler run curl --rm -it --image=curlimages/curl -- curl -skI https://env-injector.vllmbench-profiler.svc/healthz
+ 1175  oc -n vllmbench-profiler debug pod/env-injector-68f59dbcf6-tznlt
+ 1176  ls
+ 1177  diff manifests.yaml manifests.yaml.bak
+ 1178  cat manifests.yaml
+ 1179  oc get MutatingWebhookConfiguration
+ 1180  oc get MutatingWebhookConfiguration env-injector-webhook
+ 1181* 
+ 1182  oc get pods -n vllmbench-profiler
+ 1183  oc edit pod -n vllmbench-profiler env-injector-68f59dbcf6-tznlt
+ 1184  oc get sa -A
+ 1185  oc get sa -A | grep inje
+ 1186  oc get sa -A | more
+ 1187  oc get sa -A | grep inje
+ 1188  grep env-injector
+ 1189  grep env-injector *
+ 1190  cat patch-ca-bundle.sh
+ 1191  oc -n vllm-profiler get certs
+ 1192  oc -n vllmbench-profiler get certs
+ 1193  oc -n vllmbench-profiler get secrets
+ 1194  env | grep KUB
+ 1195  ls
+ 1196  oc patch mutatingwebhookconfiguration env-injector-webhook --type=json -p '[{"op":"replace","path":"/webhooks/0/failurePolicy","value":"Fail"}]'
+ 1197  kubectl -n llm-d-inference-scheduler run envinj-test --image=registry.k8s.io/pause:3.9 --labels='llm-d.ai/inferenceServing=true' --restart=Never
+ 1198  export KUBECONFIG=/home/michey/llmd_aug2025/kubeconfig.llmd.8xh200
+ 1199  # 1) Have service-ca mint a serving cert into the secret used by the Deployment
+ 1200  oc -n vllmbench-profiler annotate service env-injector   'service.beta.openshift.io/serving-cert-secret-name=env-injector-certs' --overwrite
+ 1201  # Force regeneration
+ 1202  oc -n vllmbench-profiler delete secret env-injector-certs --ignore-not-found
+ 1203  # Wait for it to reappear
+ 1204  oc -n vllmbench-profiler wait --for=condition=Established --timeout=30s secret/env-injector-certs || true
+ 1205  oc -n vllmbench-profiler get secret env-injector-certs
+ 1206  # 2) Inject the trusted CA bundle into the webhook config
+ 1207  oc annotate mutatingwebhookconfiguration env-injector-webhook   'service.beta.openshift.io/inject-cabundle=true' --overwrite
+ 1208  # Clear any custom caBundle so service-ca will fill it
+ 1209  oc patch mutatingwebhookconfiguration env-injector-webhook --type=json   -p '[{"op":"replace","path":"/webhooks/0/clientConfig/caBundle","value":""}]'
+ 1210  # 3) Restart the webhook pod to pick up the new cert
+ 1211  oc -n vllmbench-profiler rollout restart deploy/env-injector
+ 1212  oc -n vllmbench-profiler rollout status deploy/env-injector
+ 1213  # 4) Verify CA bundle and service
+ 1214  oc get mutatingwebhookconfiguration env-injector-webhook -o jsonpath='{.webhooks[0].clientConfig.caBundle}{"\n"}' | wc -c
+ 1215  oc -n vllmbench-profiler get endpoints env-injector -o wide
+ 1216  cat manifests.yaml
+ 1217  oc delete -f manifests.yaml
+ 1218  cat patch-ca-bundle.sh 
+ 1219  oc delete project vllmbench-profiler
+ 1220  oc apply -f manifests.yaml
+ 1221  ls
+ 1222  bech gen-certs.sh 
+ 1223  bash gen-certs.sh 
+ 1224  bash patch-ca-bundle.sh
+ 1225  cat validate_webhook.sh 
+ 1226  DO_TEST=1 ./validate_webhook.sh 
+ 1227  oc get pods -A -o wide | grep psap-llmd-h200-b6pv4-worker-2-fk4kq
+ 1228  oc get pods -A -o wide | grep psap-llmd-h200-b6pv4-worker-2-fk4kq | head 2
+ 1229  oc get pods -A -o wide | grep psap-llmd-h200-b6pv4-worker-2-fk4kq | head -5
+ 1230  oc logs -n netobserv-privileged netobserv-ebpf-agent-fg47g
+ 1231  oc get hosts
+ 1232  oc get nodes
+ 1233  oc get pods -o wide
+ 1234  oc logs -f                                             
+ 1235  oc logs -f vllm11-1
+ 1236  oc logs  vllm11-1
+ 1237  oc logs gaie-pd-epp-547899b9d4-fmpgn
+ 1238  oc get nodes
+ 1239  oc delete -f manifests.yaml
+ 1240  bash gen-certs.sh 
+ 1241  oc apply -f manifests.yaml
+ 1242  bash gen-certs.sh 
+ 1243  bash patch-ca-bundle.sh 
+ 1244  kubectl -n vllmbench-profiler logs deploy/env-injector -f
+ 1245  bash ./validate_webhook.sh 
+ 1246  DO_TEST=1 ./validate_webhook.sh 
+ 1247  kubectl -n vllmbench-profiler logs deploy/env-injector -f
+ 1248  oc rsh -n vllbench-profiler env-injector-856cf46d4b-thm5n
+ 1249  oc rsh -n vllmbench-profiler env-injector-856cf46d4b-thm5n
+ 1250  kubectl -n vllmbench-profiler get deploy env-injector -o jsonpath='{.spec.template.spec.containers[0].env}{"\n"}'
+ 1251  oc rsh -n vllmbench-profiler env-injector-856cf46d4b-thm5n
+ 1252  cat validate_webhook.sh 
+ 1253  oc delete -f manifests.yaml
+ 1254  podman build --runtime=runc -t vllmprofiler .
+ 1255  podman tag localhost/vllmprofiler quay.io/mimehta/vllmprofiler
+ 1256  podman push quay.io/mimehta/vllmprofiler:latest
+ 1257  oc apply -f manifests.yaml
+ 1258  bash patch-ca-bundle.sh 
+ 1259  ls
+ 1260  bash gen-certs.sh 
+ 1261  bash patch-ca-bundle.sh 
+ 1262  DO_TEST=1 ./validate_webhook.sh 
+ 1263  kubectl -n vllmbench-profiler logs deploy/env-injector -f
+ 1264  oc rsh -n vllmbench-profiler env-injector-856cf46d4b-thm5n
+ 1265  oc rsh -n vllmbench-profiler deploy/env-injector
+ 1266  cat manifests.yaml
+ 1267  oc delete -f manifests.yaml
+ 1268  oc apply -f manifests.yaml
+ 1269  bash gen-certs.sh 
+ 1270  bash patch-ca-bundle.sh 
+ 1271  DO_TEST=1 ./validate_webhook.sh 
+ 1272  kubectl -n vllmbench-profiler logs deploy/env-injector -f
+ 1273  cat validate_webhook.sh 
+ 1274  DO_TEST=1 ./validate_webhook.sh 
+ 1275  oc get pods
+ 1276  oc edit pod envinj-test-1764814484
+ 1277  ls
+ 1278  oc get pods
+ 1279  oc get pod ms-pd-llm-d-modelservice-decode-6dd8d7bb5-9m2cp -o json
+ 1280  oc get pod ms-pd-llm-d-modelservice-decode-6dd8d7bb5-9m2cp -o json | jq -r '.spec'
+ 1281  oc get pod ms-pd-llm-d-modelservice-decode-6dd8d7bb5-9m2cp -o json | jq -r '.spec.containers[0'
+ 1282  oc get pod ms-pd-llm-d-modelservice-decode-6dd8d7bb5-9m2cp -o json | jq -r '.spec.containers[0]'
+ 1283  oc get pod ms-pd-llm-d-modelservice-decode-6dd8d7bb5-9m2cp -o json | jq -r '.spec.containers[0].env'
+ 1284  oc get pod ms-pd-llm-d-modelservice-decode-6dd8d7bb5-9m2cp -o json | jq -r '.spec.containers[0].env | .[]'
+ 1285  kubectl -n vllmbench-profiler logs deploy/env-injector -f
+ 1286  vi webhook.py 
+ 1287  oc get pods
+ 1288  oc edit pod envinj-test-1764814484
+ 1289  oc -n openshift-kube-apiserver get pods -o name
+ 1290  DO_TEST=1 ./validate_webhook.sh 
+ 1291  oc -n openshift-kube-apiserver logs -l app=kube-apiserver -c kube-apiserver --since=10m | grep -i 'env-injector\\|webhook\\|admission' -A2 -B2
+ 1292  oc get project | grep api
+ 1293  oc -n openshift-kube-apiserver get pods
+ 1294  oc -n openshift-kube-apiserver logs -l app=kube-apiserver -c kube-apiserver --since=10m | grep -i 'env-injector\\|admission\\|webhook'
+ 1295  oc -n openshift-kube-apiserver logs -l app=kube-apiserver -c kube-apiserver --since=10m
+ 1296  oc -n openshift-kube-apiserver logs -l app=kube-apiserver -c kube-apiserver
+ 1297  oc -n openshift-kube-apiserver logs -l app=kube-apiserver 
+ 1298  oc -n openshift-kube-apiserver logs 
+ 1299  oc -n openshift-kube-apiserver logs kube-apiserver-psap-llmd-h200-b6pv4-master-0
+ 1300  oc -n openshift-kube-apiserver logs kube-apiserver-psap-llmd-h200-b6pv4-master-0 | grep envinj
+ 1301  oc -n openshift-kube-apiserver get pods | grep apis
+ 1302  oc -n openshift-kube-apiserver logs kube-apiserver-psap-llmd-h200-b6pv4-master-0 | grep -i mutat
+ 1303  DO_TEST=1 ./validate_webhook.sh 
+ 1304  oc -n openshift-kube-apiserver logs kube-apiserver-psap-llmd-h200-b6pv4-master-0 | grep -i mutat
+ 1305  oc -n openshift-kube-apiserver logs kube-apiserver-psap-llmd-h200-b6pv4-master-0 | grep -i injec | tail
+ 1306  podman build --runtime=runc -t vllmprofiler .
+ 1307  podman tag localhost/vllmprofiler quay.io/mimehta/vllmprofiler
+ 1308  podman push quay.io/mimehta/vllmprofiler:latest
+ 1309  oc delete -f manifests.yaml
+ 1310  ls
+ 1311  bash gen-certs.sh 
+ 1312  oc apply -f manifests.yaml
+ 1313  bash gen-certs.sh 
+ 1314  bash patch-ca-bundle.sh 
+ 1315  DO_TEST=1 ./validate_webhook.sh 
+ 1316  oc -n openshift-kube-apiserver logs kube-apiserver-psap-llmd-h200-b6pv4-master-0 | grep -i injec | tail
+ 1317  oc get pods
+ 1318  oc edit pod envinj-test-1764816123
+ 1319  oc rsh envinj-test-1764816123
+ 1320  oc delete pod ms-pd-llm-d-modelservice-prefill-574bddb8b7-xddbj
+ 1321  oc get pods
+ 1322  oc edit pod ms-pd-llm-d-modelservice-prefill-574bddb8b7-2mpvr
+ 1323  oc delete pod ms-pd-llm-d-modelservice-decode-6dd8d7bb5-9m2cp
+ 1324  oc get pods
+ 1325  oc edit pod ms-pd-llm-d-modelservice-decode-6dd8d7bb5-tbnj2
+ 1326  oc rsh ms-pd-llm-d-modelservice-decode-6dd8d7bb5-tbnj2
+ 1327  history > history

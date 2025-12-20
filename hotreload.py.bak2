@@ -1,0 +1,85 @@
+import threading
+import importlib.util
+import sys
+import os
+import time
+
+
+
+def load_module_from_file(file_path):
+    """
+    Dynamically load a module from the specified file.
+    Returns None on any failure (no exceptions raised).
+    """
+    try:
+        if not os.path.isfile(file_path):
+            return None
+
+        module_name = os.path.splitext(os.path.basename(file_path))[0]
+        spec = importlib.util.spec_from_file_location(module_name, file_path)
+
+        if spec is None or spec.loader is None:
+            return None
+
+        hot_module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = hot_module
+        spec.loader.exec_module(hot_module)
+        return hot_module
+
+    except Exception as e:
+        sys.__stdout__.write(f"Module load failed for {file_path}: {e}\n")
+        sys.__stdout__.flush()
+        return None
+
+
+def hot_reload_wrapper(file_path, reload_interval=1.0):
+    """
+    Returns a callable that checks every 'reload_interval' seconds to see if the file has been
+    updated. If updated, it reloads the entire module.
+
+    Returns None immediately if the module cannot be initially loaded.
+    """
+    module = load_module_from_file(file_path)
+
+    try:
+        last_mod_time = os.path.getmtime(file_path)
+    except OSError:
+        last_mod_time = 0.0
+
+    def updater():
+        nonlocal module, last_mod_time
+        while True:
+            os.write(1,f"In reload loop for pid {os.getpid()}\n".encode())
+            try:
+                if os.path.isfile(file_path):
+                    current_mod_time = os.path.getmtime(file_path)
+
+                    if current_mod_time > last_mod_time:
+                        new_module = load_module_from_file(file_path)
+                        if new_module is not None:
+                            module = new_module
+                            last_mod_time = current_mod_time
+                            sys.__stdout__.write(f"Reloaded module from {file_path}\n")
+                            sys.__stdout__.flush()
+
+            except Exception as e:
+                # Never allow the hot-reload thread to crash
+                sys.__stdout__.write(f"Hot-reload error: {e}")
+                sys.__stdout__.flush()
+
+            time.sleep(reload_interval)
+
+    thread = threading.Thread(target=updater, daemon=True)
+    thread.start()
+
+    def wrapper():
+        return module
+
+    return wrapper
+
+
+hot_module = hot_reload_wrapper(
+    os.getenv("RELOAD", "/home/vllm/profiler.py"),
+    reload_interval=1.0
+)
+

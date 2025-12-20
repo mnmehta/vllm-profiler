@@ -1,0 +1,57 @@
+# Dynamically load code into a process, checks for changes every second
+# To use this put "import hotreload" into sitecustomize.py and run your program with PYTHONPATH=. yourprogram
+# The module that is dynamically loaded is my_method.py by default, or whatever is in envvar RELOAD
+import os
+import time
+import threading
+import importlib.util
+import sys
+
+def load_module_from_file(file_path):
+    """
+    Dynamically load a module from the specified file.
+    """
+    module_name = os.path.splitext(os.path.basename(file_path))[0]
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    if spec is None:
+        raise ImportError(f"Cannot find module at {file_path}")
+    hot_module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = hot_module  # Register in sys.modules
+    spec.loader.exec_module(hot_module)
+    return hot_module
+
+def hot_reload_wrapper(file_path, reload_interval=1.0):
+    """
+    Returns a callable that checks every 'reload_interval' seconds to see if the file has been
+    updated. If updated, it reloads the entire module.
+    """
+    # Load the initial version of the module
+    module = load_module_from_file(file_path)
+    last_mod_time = os.path.getmtime(file_path)
+
+    # Define an internal updater that runs on a background thread
+    def updater():
+        nonlocal module, last_mod_time
+        while True:
+            try:
+                current_mod_time = os.path.getmtime(file_path)
+                if current_mod_time > last_mod_time:
+                    new_module = load_module_from_file(file_path)
+                    module = new_module
+                    last_mod_time = current_mod_time
+                    print(f"Reloaded module from {file_path}")
+            except Exception as e:
+                print(f"Error reloading module: {e}")
+            time.sleep(reload_interval)
+    
+    # Start the updater thread as a daemon
+    thread = threading.Thread(target=updater, daemon=True)
+    thread.start()
+
+    # This wrapper returns the current module
+    def wrapper():
+        return module
+    
+    return wrapper
+
+hot_module = hot_reload_wrapper(os.getenv("RELOAD","/tmp/my_method.py"), reload_interval=1.0)
