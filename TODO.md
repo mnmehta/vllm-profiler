@@ -1,5 +1,8 @@
 # Project TODOs
-
+## put import hook in 
+sitecustomize.py and test with vllm
+make hot reload optional
+make config come from yaml
 ## Convert to using import hook
 
 ## make the webhook run in the current namespace
