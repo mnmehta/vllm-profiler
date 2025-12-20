@@ -1,4 +1,5 @@
 # Project TODOs
+## use profiler.record_function
 ## put import hook in 
 sitecustomize.py and test with vllm
 make hot reload optional
