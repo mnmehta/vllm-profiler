@@ -1,6 +1,7 @@
 # Project TODOs
-## use profiler.record_function
+## use profiler.record_function to give labels to regions
 ## put import hook in 
+test TP support
 sitecustomize.py and test with vllm
 make hot reload optional
 make config come from yaml
