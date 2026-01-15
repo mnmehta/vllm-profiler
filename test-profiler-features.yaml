@@ -1,0 +1,77 @@
+---
+# Test 1: Pod with first label (llm-d.ai/inferenceServing=true)
+# Should be instrumented, will export trace file
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-label1-with-trace
+  namespace: downstream-llm-d
+  labels:
+    llm-d.ai/inferenceServing: "true"
+    test: "profiler-features"
+spec:
+  containers:
+  - name: test
+    image: python:3.11-slim
+    command: ["sleep", "3600"]
+  restartPolicy: Never
+
+---
+# Test 2: Pod with second label (app=vllm)
+# Should be instrumented, will DISABLE trace export via annotation
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-label2-no-trace
+  namespace: downstream-llm-d
+  labels:
+    app: "vllm"
+    test: "profiler-features"
+  annotations:
+    vllm.profiler/export-trace: "false"  # <-- DISABLE trace export!
+    vllm.profiler/ranges: "10-20"
+spec:
+  containers:
+  - name: test
+    image: python:3.11-slim
+    command: ["sleep", "3600"]
+  restartPolicy: Never
+
+---
+# Test 3: Pod with third label (vllm.profiler/enabled=true)
+# Should be instrumented with custom configuration
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-label3-custom
+  namespace: downstream-llm-d
+  labels:
+    vllm.profiler/enabled: "true"
+    test: "profiler-features"
+  annotations:
+    vllm.profiler/ranges: "5-10,15-20"  # Multiple ranges!
+    vllm.profiler/debug: "true"
+spec:
+  containers:
+  - name: test
+    image: python:3.11-slim
+    command: ["sleep", "3600"]
+  restartPolicy: Never
+
+---
+# Test 4: Pod with NO matching labels
+# Should NOT be instrumented
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-no-label-skip
+  namespace: downstream-llm-d
+  labels:
+    app: "other"
+    test: "profiler-features"
+spec:
+  containers:
+  - name: test
+    image: python:3.11-slim
+    command: ["sleep", "3600"]
+  restartPolicy: Never

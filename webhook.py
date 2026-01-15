@@ -3,7 +3,7 @@ import base64
 import json
 import os
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from flask import Flask, jsonify, request
 
@@ -11,8 +11,13 @@ app = Flask(__name__)
 
 # Configuration via environment variables
 TARGET_NAMESPACE = os.getenv("TARGET_NAMESPACE", "")
+# Legacy single label matching (deprecated but still supported)
 TARGET_LABEL_KEY = os.getenv("TARGET_LABEL_KEY", "")
 TARGET_LABEL_VALUE = os.getenv("TARGET_LABEL_VALUE", "")
+# New: support multiple labels (comma-separated "key=value" pairs, ANY match triggers injection)
+# Example: "llm-d.ai/inferenceServing=true,app=vllm,role=worker"
+# Pod with ANY of these labels will be instrumented
+TARGET_LABELS = os.getenv("TARGET_LABELS", "")
 INJECT_ENV_NAME = os.getenv("INJECT_ENV_NAME", "")
 INJECT_ENV_VALUE = os.getenv("INJECT_ENV_VALUE", "")
 PORT = int(os.getenv("WEBHOOK_PORT", "8443"))
@@ -26,46 +31,150 @@ FILES_VOLUME_NAME = "env-injector-files"
 FILES_CONFIGMAP_NAME = "env-injector-files"
 FILE_KEYS = [
     {"key": "sitecustomize.py", "mountPath": "/home/vllm/profiler/sitecustomize.py"},
+    {"key": "profiler_config.yaml", "mountPath": "/home/vllm/profiler/profiler_config.yaml"},
 ]
 
-def build_env_patch_for_pod(pod: Dict[str, Any], env_name: str, env_value: str) -> List[Dict[str, Any]]:
+# Profiler configuration annotation prefix
+PROFILER_ANNOTATION_PREFIX = "vllm.profiler/"
+
+def parse_target_labels(labels_str: str) -> List[Tuple[str, str]]:
+    """
+    Parse TARGET_LABELS environment variable into list of (key, value) tuples.
+
+    Format: "key1=value1,key2=value2,..."
+    Example: "llm-d.ai/inferenceServing=true,app=vllm"
+    Returns: [("llm-d.ai/inferenceServing", "true"), ("app", "vllm")]
+    """
+    if not labels_str:
+        return []
+
+    labels = []
+    for pair in labels_str.split(','):
+        pair = pair.strip()
+        if '=' in pair:
+            key, value = pair.split('=', 1)  # Split on first '=' only
+            labels.append((key.strip(), value.strip()))
+        else:
+            logger.warning(f"Invalid label pair (missing '='): '{pair}'")
+    return labels
+
+def matches_any_label(pod_labels: Dict[str, str], target_labels: List[Tuple[str, str]]) -> bool:
+    """
+    Check if pod has ANY of the target labels (OR logic).
+
+    Returns True if any (key, value) pair in target_labels matches pod_labels.
+    """
+    for key, value in target_labels:
+        if pod_labels.get(key) == value:
+            logger.debug(f"Pod matched on label '{key}'='{value}'")
+            return True
+    return False
+
+def extract_profiler_env_from_annotations(annotations: Dict[str, str]) -> List[Dict[str, str]]:
+    """
+    Extract profiler configuration from pod annotations and convert to environment variables.
+
+    Supported annotations:
+        vllm.profiler/ranges: "50-100,200-300"
+        vllm.profiler/activities: "CPU,CUDA"
+        vllm.profiler/record-shapes: "true"
+        vllm.profiler/with-stack: "true"
+        vllm.profiler/memory: "true"
+        vllm.profiler/output: "trace_custom.json"
+        vllm.profiler/debug: "true"
+
+    Returns list of {"name": "ENV_VAR", "value": "value"} dicts.
+    """
+    env_vars = []
+
+    # Mapping from annotation suffix to environment variable name
+    annotation_to_env = {
+        "ranges": "VLLM_PROFILER_RANGES",
+        "activities": "VLLM_PROFILER_ACTIVITIES",
+        "record-shapes": "VLLM_PROFILER_RECORD_SHAPES",
+        "with-stack": "VLLM_PROFILER_WITH_STACK",
+        "memory": "VLLM_PROFILER_MEMORY",
+        "output": "VLLM_PROFILER_OUTPUT",
+        "export-trace": "VLLM_PROFILER_EXPORT_TRACE",
+        "debug": "VLLM_PROFILER_DEBUG",
+    }
+
+    for annotation_suffix, env_name in annotation_to_env.items():
+        annotation_key = f"{PROFILER_ANNOTATION_PREFIX}{annotation_suffix}"
+        if annotation_key in annotations:
+            env_vars.append({
+                "name": env_name,
+                "value": annotations[annotation_key]
+            })
+            logger.debug(f"Found profiler annotation '{annotation_key}' -> {env_name}='{annotations[annotation_key]}'")
+
+    return env_vars
+
+def build_env_patch_for_pod(pod: Dict[str, Any], env_vars: List[Dict[str, str]]) -> List[Dict[str, Any]]:
+    """
+    Build JSON patch operations to inject environment variables into all containers.
+
+    Args:
+        pod: The pod object to patch
+        env_vars: List of {"name": "ENV_NAME", "value": "value"} dicts
+
+    Returns:
+        List of JSON patch operations
+    """
     patch: List[Dict[str, Any]] = []
     containers = pod.get("spec", {}).get("containers", [])
 
-    logger.debug("Building env patch for %d container(s); target env '%s'='%s'", len(containers), env_name, env_value)
+    logger.debug("Building env patch for %d container(s) with %d env var(s)", len(containers), len(env_vars))
 
     for container_index, container in enumerate(containers):
         env_list = container.get("env", [])
         cname = container.get("name", f"idx-{container_index}")
         logger.debug("Inspecting container '%s' (index=%d); current env count=%d", cname, container_index, len(env_list))
-        # Find existing env var index if present
-        existing_index = -1
-        for i, item in enumerate(env_list):
-            if item.get("name") == env_name:
-                existing_index = i
-                break
 
-        if existing_index >= 0:
-            logger.debug("Container '%s': replacing existing env '%s' at index %d", cname, env_name, existing_index)
-            patch.append({
-                "op": "replace",
-                "path": f"/spec/containers/{container_index}/env/{existing_index}/value",
-                "value": env_value,
-            })
-        else:
-            if env_list:
-                logger.debug("Container '%s': appending new env '%s'", cname, env_name)
+        # Build list of env vars to add
+        env_to_add = []
+
+        for env_var in env_vars:
+            env_name = env_var["name"]
+            env_value = env_var["value"]
+
+            # Check if env var already exists
+            existing_index = -1
+            for i, item in enumerate(env_list):
+                if item.get("name") == env_name:
+                    existing_index = i
+                    break
+
+            if existing_index >= 0:
+                # Replace existing env var
+                logger.debug("Container '%s': replacing existing env '%s' at index %d", cname, env_name, existing_index)
                 patch.append({
-                    "op": "add",
-                    "path": f"/spec/containers/{container_index}/env/-",
-                    "value": {"name": env_name, "value": env_value},
+                    "op": "replace",
+                    "path": f"/spec/containers/{container_index}/env/{existing_index}/value",
+                    "value": env_value,
                 })
             else:
-                logger.debug("Container '%s': creating env list with '%s'", cname, env_name)
+                # Queue for addition
+                env_to_add.append({"name": env_name, "value": env_value})
+
+        # Add all new env vars in one operation
+        if env_to_add:
+            if env_list:
+                # Container already has env list, append each var
+                for env_var in env_to_add:
+                    logger.debug("Container '%s': appending env '%s'", cname, env_var["name"])
+                    patch.append({
+                        "op": "add",
+                        "path": f"/spec/containers/{container_index}/env/-",
+                        "value": env_var,
+                    })
+            else:
+                # Container has no env list, create it with all vars
+                logger.debug("Container '%s': creating env list with %d var(s)", cname, len(env_to_add))
                 patch.append({
                     "op": "add",
                     "path": f"/spec/containers/{container_index}/env",
-                    "value": [{"name": env_name, "value": env_value}],
+                    "value": env_to_add,
                 })
 
     logger.debug("Patch operations prepared: %s", json.dumps(patch))
@@ -175,26 +284,68 @@ def mutate():
 
     namespace = req.get("namespace", "")
     obj = req.get("object", {}) or {}
-    labels = obj.get("metadata", {}).get("labels", {}) or {}
-    name = obj.get("metadata", {}).get("name", "")
+    metadata = obj.get("metadata", {}) or {}
+    labels = metadata.get("labels", {}) or {}
+    annotations = metadata.get("annotations", {}) or {}
+    name = metadata.get("name", "")
 
     logger.debug("Pod admission: ns=%s name=%s labels=%s", namespace, name, labels)
-    logger.debug("Filter config: TARGET_NAMESPACE=%s TARGET_LABEL_KEY=%s TARGET_LABEL_VALUE=%s INJECT_ENV_NAME=%s",
-                 TARGET_NAMESPACE, TARGET_LABEL_KEY, TARGET_LABEL_VALUE, INJECT_ENV_NAME)
 
-    # Only mutate pods with matching namespace and label key/value
-    if not (TARGET_NAMESPACE and TARGET_LABEL_KEY and TARGET_LABEL_VALUE and INJECT_ENV_NAME):
-        logger.debug("Missing required filter or injection config; allowing without patch")
+    # Check namespace
+    if not TARGET_NAMESPACE:
+        logger.debug("TARGET_NAMESPACE not configured; allowing without patch")
         return jsonify(response_body)
     if namespace != TARGET_NAMESPACE:
         logger.debug("Namespace mismatch: got '%s' expected '%s'; allowing without patch", namespace, TARGET_NAMESPACE)
         return jsonify(response_body)
-    if labels.get(TARGET_LABEL_KEY) != TARGET_LABEL_VALUE:
-        logger.debug("Label mismatch: pod label '%s'='%s' expected value '%s'; allowing without patch",
-                     TARGET_LABEL_KEY, labels.get(TARGET_LABEL_KEY), TARGET_LABEL_VALUE)
+
+    # Check labels (support both new and legacy modes)
+    label_match = False
+
+    if TARGET_LABELS:
+        # New mode: multiple labels with OR logic
+        target_label_pairs = parse_target_labels(TARGET_LABELS)
+        logger.debug(f"Using multi-label matching (OR logic): {target_label_pairs}")
+        if target_label_pairs:
+            label_match = matches_any_label(labels, target_label_pairs)
+            if not label_match:
+                logger.debug(f"Pod has none of the target labels {target_label_pairs}; allowing without patch")
+                return jsonify(response_body)
+        else:
+            logger.debug("TARGET_LABELS set but empty/invalid; allowing without patch")
+            return jsonify(response_body)
+    elif TARGET_LABEL_KEY and TARGET_LABEL_VALUE:
+        # Legacy mode: single label matching
+        logger.debug(f"Using legacy single-label matching: {TARGET_LABEL_KEY}={TARGET_LABEL_VALUE}")
+        if labels.get(TARGET_LABEL_KEY) != TARGET_LABEL_VALUE:
+            logger.debug("Label mismatch: pod label '%s'='%s' expected value '%s'; allowing without patch",
+                         TARGET_LABEL_KEY, labels.get(TARGET_LABEL_KEY), TARGET_LABEL_VALUE)
+            return jsonify(response_body)
+        label_match = True
+    else:
+        logger.debug("No label selector configured (neither TARGET_LABELS nor TARGET_LABEL_KEY/VALUE); allowing without patch")
         return jsonify(response_body)
 
-    patch_ops = build_env_patch_for_pod(obj, INJECT_ENV_NAME, INJECT_ENV_VALUE)
+    if not INJECT_ENV_NAME:
+        logger.debug("INJECT_ENV_NAME not configured; allowing without patch")
+        return jsonify(response_body)
+
+    # If we get here, namespace and labels matched
+    logger.debug(f"Pod matched! Proceeding with injection.")
+
+    # Collect all environment variables to inject
+    env_vars_to_inject = [{"name": INJECT_ENV_NAME, "value": INJECT_ENV_VALUE}]
+
+    # Extract and add profiler-specific configuration from annotations
+    profiler_env_vars = extract_profiler_env_from_annotations(annotations)
+    if profiler_env_vars:
+        logger.debug(f"Adding {len(profiler_env_vars)} profiler environment variable(s) from annotations")
+        env_vars_to_inject.extend(profiler_env_vars)
+
+    # Build environment variable patches
+    patch_ops = build_env_patch_for_pod(obj, env_vars_to_inject)
+
+    # Mount configuration files
     patch_ops.extend(build_files_volume_patch_for_pod(obj))
 
     if patch_ops:
@@ -214,9 +365,20 @@ if __name__ == "__main__":
         raise SystemExit(f"TLS cert/key not found at {TLS_CERT_FILE} / {TLS_KEY_FILE}")
 
     logger.info("Starting env-injector webhook on port %d", PORT)
-    logger.info("Effective config: TARGET_NAMESPACE=%s TARGET_LABEL_KEY=%s TARGET_LABEL_VALUE=%s INJECT_ENV_NAME=%s LOG_LEVEL=%s",
-                TARGET_NAMESPACE, TARGET_LABEL_KEY, TARGET_LABEL_VALUE, INJECT_ENV_NAME, LOG_LEVEL)
+    logger.info("Target namespace: %s", TARGET_NAMESPACE)
+
+    if TARGET_LABELS:
+        logger.info("Label selector mode: MULTI (OR logic)")
+        logger.info("Target labels (any match): %s", TARGET_LABELS)
+    elif TARGET_LABEL_KEY and TARGET_LABEL_VALUE:
+        logger.info("Label selector mode: SINGLE (legacy)")
+        logger.info("Target label: %s=%s", TARGET_LABEL_KEY, TARGET_LABEL_VALUE)
+    else:
+        logger.warning("No label selector configured!")
+
+    logger.info("Injection: %s=%s", INJECT_ENV_NAME, INJECT_ENV_VALUE)
     logger.info("TLS cert=%s key=%s", TLS_CERT_FILE, TLS_KEY_FILE)
+    logger.info("Log level: %s", LOG_LEVEL)
 
     app.run(
         host="0.0.0.0",

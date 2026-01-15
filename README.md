@@ -16,21 +16,28 @@ This system enables real-time torch profiling of vLLM model execution without re
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ User creates Pod with label:                    │
-│ llm-d.ai/inferenceServing=true                  │
+│ User creates Pod with ANY matching label:       │
+│  - llm-d.ai/inferenceServing=true  OR           │
+│  - app=vllm  OR                                 │
+│  - vllm.profiler/enabled=true                   │
+│ Optional annotations for configuration:         │
+│  - vllm.profiler/ranges="50-100,200-300"        │
+│  - vllm.profiler/export-trace="false"           │
 └────────────────┬────────────────────────────────┘
                  │
                  ▼
 ┌─────────────────────────────────────────────────┐
 │ Mutating Webhook (webhook.py)                   │
-│  - Checks namespace & label                     │
+│  - Checks namespace & label (OR logic)          │
 │  - Injects: PYTHONPATH=/home/vllm/profiler      │
-│  - Mounts: sitecustomize.py from ConfigMap      │
+│  - Converts annotations to env vars             │
+│  - Mounts: sitecustomize.py + config from CM    │
 └────────────────┬────────────────────────────────┘
                  │
                  ▼
 ┌─────────────────────────────────────────────────┐
 │ Pod starts → Python auto-loads sitecustomize.py │
+│  Loads config from YAML & env vars              │
 │  Installs import hook in sys.meta_path          │
 └────────────────┬────────────────────────────────┘
                  │
@@ -42,8 +49,8 @@ This system enables real-time torch profiling of vLLM model execution without re
                  │
                  ▼
 ┌─────────────────────────────────────────────────┐
-│ Profiler runs on calls 100-150                  │
-│  Exports: trace<pid>.json (Chrome trace)        │
+│ Profiler runs on configured ranges (e.g. 100-150│
+│  Optionally exports: trace_pid{pid}.json        │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -76,29 +83,54 @@ The deployment script will:
 
 ### Configuration
 
-Edit `manifests.yaml` to configure target namespace and label selector:
+Edit `manifests.yaml` to configure target namespace and label selectors:
 
 ```yaml
 env:
   - name: TARGET_NAMESPACE
-    value: "downstream-llm-d"          # Namespace to inject profiler into
-  - name: TARGET_LABEL_KEY
-    value: "llm-d.ai/inferenceServing" # Label key to match
-  - name: TARGET_LABEL_VALUE
-    value: "true"                       # Label value to match
+    value: "downstream-llm-d"
+  # Multi-label selector (OR logic): pod with ANY of these labels will be instrumented
+  - name: TARGET_LABELS
+    value: "llm-d.ai/inferenceServing=true,app=vllm,vllm.profiler/enabled=true"
 ```
+
+The webhook uses **OR logic** - a pod matching ANY of the specified labels will be profiled. No webhook rebuild needed to change labels.
 
 ### Create Profiled Pod
 
-Create a vLLM pod in the target namespace with the matching label:
+Create a vLLM pod in the target namespace with a matching label:
 
 ```bash
-# Pod will automatically be injected with profiler
+# Basic: Pod will automatically be injected with default profiler configuration
 kubectl run my-vllm-pod \
   -n downstream-llm-d \
   --labels="llm-d.ai/inferenceServing=true" \
   --image=vllm/vllm-openai:latest \
   -- vllm serve <model-name>
+```
+
+Or use pod annotations for custom profiler configuration:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-vllm-pod
+  namespace: downstream-llm-d
+  labels:
+    app: vllm  # Matches one of the target labels
+  annotations:
+    # Custom profiling ranges (multiple windows)
+    vllm.profiler/ranges: "50-100,200-300"
+    # Disable trace file export (reduce I/O)
+    vllm.profiler/export-trace: "false"
+    # Enable debug logging
+    vllm.profiler/debug: "true"
+spec:
+  containers:
+  - name: vllm
+    image: vllm/vllm-openai:latest
+    command: ["vllm", "serve", "<model-name>"]
 ```
 
 ### View Profiler Output
@@ -130,19 +162,22 @@ kubectl cp downstream-llm-d/<pod-name>:/path/to/trace<pid>.json ./trace.json
 
 ```
 vllm-profiler/
-├── sitecustomize.py        # Profiler import hook (injected into pods)
-├── webhook.py              # Flask mutating admission webhook
-├── manifests.yaml          # Kubernetes resources
-├── kustomization.yaml      # ConfigMap generator
-├── Dockerfile              # Webhook container image
-├── requirements.txt        # Python dependencies
-├── deploy.sh               # Deployment automation script
-├── teardown.sh             # Cleanup script
-├── gen-certs.sh            # TLS certificate generation
-├── patch-ca-bundle.sh      # Webhook CA bundle patching
-├── validate_webhook.sh     # Validation tool
-├── test-profiler.sh        # Standalone profiler testing
-└── README.md               # This file
+├── sitecustomize.py            # Profiler import hook (injected into pods)
+├── profiler_config.yaml        # Default profiler configuration
+├── webhook.py                  # Flask mutating admission webhook
+├── manifests.yaml              # Kubernetes resources
+├── kustomization.yaml          # ConfigMap generator
+├── Dockerfile                  # Webhook container image
+├── requirements.txt            # Python dependencies
+├── deploy.sh                   # Deployment automation script
+├── teardown.sh                 # Cleanup script
+├── gen-certs.sh                # TLS certificate generation
+├── patch-ca-bundle.sh          # Webhook CA bundle patching
+├── validate_webhook.sh         # Validation tool
+├── test-profiler.sh            # Standalone profiler testing
+├── test-profiler-features.yaml # Feature testing examples
+├── CONFIGURATION_EXAMPLES.md   # Configuration guide
+└── README.md                   # This file
 ```
 
 ## How It Works
@@ -151,32 +186,56 @@ vllm-profiler/
 
 Flask-based mutating webhook that:
 - Listens for Pod CREATE operations
-- Filters by namespace and label selector
+- Filters by namespace and **multiple label selectors (OR logic)**
+- Extracts profiler configuration from pod annotations
+- Converts annotations to environment variables
 - Injects `PYTHONPATH=/home/vllm/profiler` environment variable
-- Mounts `sitecustomize.py` from ConfigMap to `/home/vllm/profiler/sitecustomize.py`
+- Mounts `sitecustomize.py` and `profiler_config.yaml` from ConfigMap
 
 ### 2. Profiler Import Hook (sitecustomize.py)
 
 Python module that:
 - Auto-loads when Python starts (via PYTHONPATH)
+- Loads configuration from **3 sources** (priority order):
+  1. Environment variables (highest priority)
+  2. `profiler_config.yaml` file
+  3. Hardcoded defaults (lowest priority)
 - Installs a `sys.meta_path` finder to intercept `vllm.v1.worker.gpu_worker` import
 - Wraps `Worker.execute_model` with torch.profiler
-- Records CPU+CUDA activity for calls 100-150
-- Exports Chrome trace JSON file
+- Records CPU+CUDA activity for configured call ranges
+- Optionally exports Chrome trace JSON file
 
 ### 3. Profiler Configuration
 
-Default profiler settings (in sitecustomize.py):
+Configuration is managed via `ProfilerConfig` class with multi-source support:
 
-```python
-start_profile = 100      # Start profiling at call #100
-steps = 50               # Profile for 50 calls (100-150)
-activities = [CPU, CUDA] # Profile CPU and CUDA activity
-record_shapes = True     # Record tensor shapes
-with_stack = True        # Capture stack traces
+**Default settings** (from profiler_config.yaml):
+```yaml
+profiling_ranges: "100-150"  # Can specify multiple: "50-100,200-300"
+activities: "CPU,CUDA"
+options:
+  record_shapes: true
+  with_stack: true
+  profile_memory: false
+output:
+  export_chrome_trace: true  # Set false to disable trace export
+  file_pattern: "trace_pid{pid}.json"
 ```
 
-Output file: `${VLLM_TORCH_PROFILE:-trace<pid>.json}`
+**Per-pod override** (via annotations):
+```yaml
+annotations:
+  vllm.profiler/ranges: "50-100,200-300"      # Multiple profiling windows
+  vllm.profiler/export-trace: "false"         # Disable trace export
+  vllm.profiler/debug: "true"                 # Enable debug logging
+  vllm.profiler/activities: "CPU,CUDA"
+  vllm.profiler/record-shapes: "true"
+  vllm.profiler/with-stack: "true"
+  vllm.profiler/memory: "false"
+  vllm.profiler/output: "custom_trace.json"
+```
+
+See [CONFIGURATION_EXAMPLES.md](CONFIGURATION_EXAMPLES.md) for comprehensive configuration guide.
 
 ## Advanced Usage
 
@@ -184,8 +243,9 @@ Output file: `${VLLM_TORCH_PROFILE:-trace<pid>.json}`
 
 **Webhook Configuration:**
 - `TARGET_NAMESPACE`: Namespace to target (default: "downstream-llm-d")
-- `TARGET_LABEL_KEY`: Pod label key to match (default: "llm-d.ai/inferenceServing")
-- `TARGET_LABEL_VALUE`: Pod label value to match (default: "true")
+- `TARGET_LABELS`: Comma-separated label selectors with OR logic (e.g., "key1=val1,key2=val2")
+- `TARGET_LABEL_KEY`: Legacy single label key (deprecated, use TARGET_LABELS)
+- `TARGET_LABEL_VALUE`: Legacy single label value (deprecated, use TARGET_LABELS)
 - `INJECT_ENV_NAME`: Environment variable to inject (default: "PYTHONPATH")
 - `INJECT_ENV_VALUE`: Environment variable value (default: "/home/vllm/profiler")
 - `LOG_LEVEL`: Webhook logging level (default: "DEBUG")
@@ -195,8 +255,15 @@ Output file: `${VLLM_TORCH_PROFILE:-trace<pid>.json}`
 - `IMAGE_REGISTRY`: Image registry (default: "quay.io/mimehta")
 - `IMAGE_TAG`: Image tag (default: "latest")
 
-**Profiler:**
-- `VLLM_TORCH_PROFILE`: Custom trace output file path
+**Profiler Configuration (injected via pod annotations or set manually):**
+- `VLLM_PROFILER_RANGES`: Profiling call ranges (e.g., "100-150" or "50-100,200-300")
+- `VLLM_PROFILER_ACTIVITIES`: Activities to profile (e.g., "CPU,CUDA")
+- `VLLM_PROFILER_RECORD_SHAPES`: Record tensor shapes (true/false)
+- `VLLM_PROFILER_WITH_STACK`: Capture stack traces (true/false)
+- `VLLM_PROFILER_MEMORY`: Profile memory allocations (true/false)
+- `VLLM_PROFILER_OUTPUT`: Custom trace output file pattern
+- `VLLM_PROFILER_EXPORT_TRACE`: Enable/disable trace export (true/false)
+- `VLLM_PROFILER_DEBUG`: Enable debug logging (true/false)
 
 ### Testing Without Kubernetes
 
@@ -209,28 +276,88 @@ Test the profiler standalone with a local vLLM instance:
 
 ### Customizing Profiler Settings
 
-Edit `sitecustomize.py` and modify the profiler configuration:
+**Method 1: Update ConfigMap (affects all pods):**
 
-```python
-def wrap_func_with_profiler(original_func):
-    start_profile = 200    # Change start call
-    steps = 100             # Change number of calls to profile
+Edit `profiler_config.yaml` and redeploy:
 
-    prof = profile(
-        activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
-        record_shapes=True,
-        with_stack=True,
-        profile_memory=True  # Add memory profiling
-    )
-    # ...
+```yaml
+profiling_ranges: "200-300"  # Change profiling window
+activities: "CPU,CUDA"
+options:
+  profile_memory: true       # Enable memory profiling
+  record_shapes: true
 ```
 
-Then redeploy:
+Then update ConfigMap:
 
 ```bash
 oc delete configmap env-injector-files -n downstream-llm-d
 oc apply -k .
 ```
+
+**Method 2: Per-pod configuration (via annotations):**
+
+Add annotations to your pod spec (no ConfigMap update needed):
+
+```yaml
+metadata:
+  annotations:
+    vllm.profiler/ranges: "200-300"
+    vllm.profiler/memory: "true"
+    vllm.profiler/export-trace: "false"
+```
+
+**Method 3: Test different configurations:**
+
+See `test-profiler-features.yaml` for examples of different configurations.
+
+## Key Features
+
+### 1. Multiple Label Selectors with OR Logic
+
+The webhook supports multiple label selectors - a pod matching **ANY** of the configured labels will be profiled:
+
+```yaml
+TARGET_LABELS: "llm-d.ai/inferenceServing=true,app=vllm,vllm.profiler/enabled=true"
+```
+
+This eliminates the need to rebuild the webhook when adding new pod types to profile.
+
+### 2. Multiple Profiling Ranges
+
+Profile multiple non-contiguous call ranges in a single session:
+
+```yaml
+vllm.profiler/ranges: "50-100,200-300,500-600"
+```
+
+This is useful for:
+- Capturing warmup vs steady-state performance
+- Comparing different phases of model execution
+- Reducing profiling overhead while still capturing key intervals
+
+### 3. Optional Trace Export
+
+Disable trace file export to reduce I/O overhead in production:
+
+```yaml
+vllm.profiler/export-trace: "false"  # Still prints profiler table to logs
+```
+
+### 4. Dynamic Configuration
+
+No webhook rebuilds needed - configure profiling via:
+- **ConfigMap** (cluster-wide defaults)
+- **Pod annotations** (per-pod overrides)
+- **Environment variables** (highest priority)
+
+### 5. Zero Code Changes
+
+Profiling is completely transparent to the application:
+- No vLLM source code modifications
+- No container rebuilds
+- No application downtime
+- Automatic instrumentation via import hooks
 
 ## Troubleshooting
 
@@ -289,7 +416,7 @@ DO_SIMPLE_TEST=1 PROFILER_NS=vllm-profiler TARGET_NS=downstream-llm-d ./validate
 - Secret: `env-injector-certs` (TLS certificates)
 
 **Target Namespace: downstream-llm-d** (configurable)
-- ConfigMap: `env-injector-files` (contains sitecustomize.py)
+- ConfigMap: `env-injector-files` (contains sitecustomize.py and profiler_config.yaml)
 
 **Cluster-wide:**
 - MutatingWebhookConfiguration: `env-injector-webhook`

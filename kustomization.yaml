@@ -3,5 +3,6 @@ configMapGenerator:
   namespace: downstream-llm-d
   files:
     - sitecustomize.py
+    - profiler_config.yaml
 generatorOptions:
   disableNameSuffixHash: true
