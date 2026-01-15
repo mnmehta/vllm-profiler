@@ -1,3 +1,13 @@
+"""
+sitecustomize.py - Auto-loaded PyTorch profiler for vLLM workers
+
+This module is automatically loaded by Python when it starts (via PYTHONPATH).
+It installs an import hook that intercepts vllm.v1.worker.gpu_worker module
+loading and wraps Worker.execute_model with torch.profiler instrumentation.
+
+The profiler records CPU+CUDA activity for calls 100-150, then exports a
+Chrome trace JSON file for visualization.
+"""
 import sys
 import importlib
 import importlib.util
@@ -105,3 +115,6 @@ def safe_wrap_function(module=None):
 def wrap_function(mod):
     print("wrapping")
     mod.Worker.execute_model = wrap_func_with_profiler(mod.Worker.execute_model)
+
+# Startup message
+print("[sitecustomize] vLLM profiler import hook installed - will intercept vllm.v1.worker.gpu_worker")

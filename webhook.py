@@ -25,9 +25,7 @@ logger = logging.getLogger("env-injector")
 FILES_VOLUME_NAME = "env-injector-files"
 FILES_CONFIGMAP_NAME = "env-injector-files"
 FILE_KEYS = [
-    {"key": "my_method.py", "mountPath": "/home/vllm/my_method.py"},
-    {"key": "hotreload.py", "mountPath": "/home/vllm/hotreload/hotreload.py"},
-    {"key": "sitecustomize.py", "mountPath": "/home/vllm/hotreload/sitecustomize.py"},
+    {"key": "sitecustomize.py", "mountPath": "/home/vllm/profiler/sitecustomize.py"},
 ]
 
 def build_env_patch_for_pod(pod: Dict[str, Any], env_name: str, env_value: str) -> List[Dict[str, Any]]:

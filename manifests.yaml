@@ -33,7 +33,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: TARGET_NAMESPACE
-          value: "llm-d-inference-scheduler"
+          value: "downstream-llm-d"
         - name: TARGET_LABEL_KEY
           value: "llm-d.ai/inferenceServing"
         - name: TARGET_LABEL_VALUE
@@ -41,7 +41,7 @@ spec:
         - name: INJECT_ENV_NAME
           value: "PYTHONPATH"
         - name: INJECT_ENV_VALUE
-          value: "/home/vllm/hotreload"
+          value: "/home/vllm/profiler"
         ports:
         - containerPort: 8443
           name: https

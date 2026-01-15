@@ -1,9 +1,7 @@
 configMapGenerator:
 - name: env-injector-files
-  namespace: llm-d-inference-scheduler
+  namespace: downstream-llm-d
   files:
-    - my_method.py
-    - hotreload.py
     - sitecustomize.py
 generatorOptions:
   disableNameSuffixHash: true
