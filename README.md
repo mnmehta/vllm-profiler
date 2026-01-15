@@ -96,6 +96,22 @@ env:
 
 The webhook uses **OR logic** - a pod matching ANY of the specified labels will be profiled. No webhook rebuild needed to change labels.
 
+### Updating Label Selectors Without Rebuilding
+
+You can change the target labels without rebuilding the webhook container:
+
+```bash
+# Update TARGET_LABELS environment variable
+oc set env deployment/env-injector -n vllm-profiler \
+  TARGET_LABELS="llm-d.ai/inferenceServing=true,app=vllm,vllm.profiler/enabled=true,role=worker"
+
+# Webhook pod will automatically restart with new configuration
+# Verify new configuration:
+oc logs -n vllm-profiler deployment/env-injector | grep "Target labels"
+```
+
+This allows you to dynamically add or remove pod types to profile without any downtime.
+
 ### Create Profiled Pod
 
 Create a vLLM pod in the target namespace with a matching label:
@@ -276,9 +292,9 @@ Test the profiler standalone with a local vLLM instance:
 
 ### Customizing Profiler Settings
 
-**Method 1: Update ConfigMap (affects all pods):**
+**Method 1: Update ConfigMap (affects all new pods):**
 
-Edit `profiler_config.yaml` and redeploy:
+Edit `profiler_config.yaml` and update the ConfigMap:
 
 ```yaml
 profiling_ranges: "200-300"  # Change profiling window
@@ -288,12 +304,18 @@ options:
   record_shapes: true
 ```
 
-Then update ConfigMap:
+Then update ConfigMap (no webhook rebuild needed):
 
 ```bash
+# Delete and recreate ConfigMap with updated configuration
 oc delete configmap env-injector-files -n downstream-llm-d
 oc apply -k .
+
+# New pods will automatically get the updated configuration
+# Existing pods need to be restarted to pick up changes
 ```
+
+**Note:** Updating the ConfigMap does not require rebuilding or restarting the webhook. Only the target namespace's ConfigMap is updated.
 
 **Method 2: Per-pod configuration (via annotations):**
 
@@ -358,6 +380,44 @@ Profiling is completely transparent to the application:
 - No container rebuilds
 - No application downtime
 - Automatic instrumentation via import hooks
+
+## What Requires Rebuild vs Runtime Update
+
+### No Rebuild Required ✅
+
+These changes can be made without rebuilding the webhook container:
+
+1. **Change target labels:**
+   ```bash
+   oc set env deployment/env-injector -n vllm-profiler TARGET_LABELS="new,labels,here"
+   ```
+
+2. **Change target namespace:**
+   ```bash
+   oc set env deployment/env-injector -n vllm-profiler TARGET_NAMESPACE="new-namespace"
+   ```
+
+3. **Update profiler configuration (ConfigMap):**
+   ```bash
+   oc delete configmap env-injector-files -n downstream-llm-d
+   oc apply -k .
+   ```
+
+4. **Per-pod configuration:**
+   - Just add annotations to your pod spec
+
+### Rebuild Required 🔨
+
+These changes require rebuilding and redeploying the webhook:
+
+1. **Changes to webhook.py logic**
+2. **Changes to Python dependencies (requirements.txt)**
+3. **Changes to Dockerfile**
+
+To rebuild:
+```bash
+./deploy.sh  # Rebuilds container image and redeploys
+```
 
 ## Troubleshooting
 
