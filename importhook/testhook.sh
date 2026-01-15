@@ -14,7 +14,7 @@ oc rsh "$POD" bash -s <<EOF
 set -euo pipefail
 
 echo "Launching vLLM server (model=${MODEL}, port=${PORT})..."
-PYTHONPATH=/home nohup vllm serve --model "$MODEL" --host 0.0.0.0 --port "$PORT" >/tmp/vllm-serve.log 2>&1 &
+HF_HOME=/model-cache PYTHONPATH=/home nohup vllm serve --tensor-parallel 8 --model "$MODEL" --host 0.0.0.0 --port "$PORT" >/tmp/vllm-serve.log 2>&1 &
 SERVE_PID=\$!
 
 cleanup() {
