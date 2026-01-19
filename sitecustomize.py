@@ -380,5 +380,5 @@ def unwrap_function():
 # Startup
 # ==============================================================================
 
-print(f"[profiler] vLLM profiler installed - will profile ranges: {_config.ranges}")
-print(f"[profiler] Target: {_config.target_module}.{_config.target_class}.{_config.target_method}")
+print(f"[profiler] vLLM profiler installed - will profile ranges: {_config.ranges}", file=sys.stderr)
+print(f"[profiler] Target: {_config.target_module}.{_config.target_class}.{_config.target_method}", file=sys.stderr)
