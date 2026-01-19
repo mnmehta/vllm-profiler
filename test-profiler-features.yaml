@@ -1,3 +1,10 @@
+# Test suite for vLLM profiler features
+#
+# Usage:
+#   Deploy profiler:  ./deploy.sh
+#   Run tests:        oc apply -f test-profiler-features.yaml
+#   Cleanup:          oc delete -f test-profiler-features.yaml
+#
 ---
 # Test 1: Pod with first label (llm-d.ai/inferenceServing=true)
 # Should be instrumented, will export trace file
