@@ -190,6 +190,7 @@ vllm-profiler/
 ├── gen-certs.sh                # TLS certificate generation
 ├── patch-ca-bundle.sh          # Webhook CA bundle patching
 ├── validate_webhook.sh         # Validation tool
+├── test-vllm-integration.sh    # End-to-end integration test
 ├── test-profiler.sh            # Standalone profiler testing
 ├── test-profiler-features.yaml # Feature testing examples
 ├── CONFIGURATION_EXAMPLES.md   # Configuration guide
@@ -281,9 +282,54 @@ See [CONFIGURATION_EXAMPLES.md](CONFIGURATION_EXAMPLES.md) for comprehensive con
 - `VLLM_PROFILER_EXPORT_TRACE`: Enable/disable trace export (true/false)
 - `VLLM_PROFILER_DEBUG`: Enable debug logging (true/false)
 
-### Testing Without Kubernetes
+### Testing
 
-Test the profiler standalone with a local vLLM instance:
+**Integration Test (Recommended):**
+
+Run the complete end-to-end integration test:
+
+```bash
+# Deploys profiler, creates vLLM pod, runs inference, verifies profiler output
+./test-vllm-integration.sh
+```
+
+This test:
+- Deploys the profiler webhook and ConfigMap
+- Creates a vLLM pod with the latest vLLM image
+- Waits for vLLM server to be ready (checks /v1/models endpoint)
+- Runs vLLM serve with a small test model (facebook/opt-125m)
+- Sends a single inference request generating 200 tokens
+- Verifies profiler output in the logs
+- Checks for VLLM_RPC_TIMEOUT environment variable
+- Cleans up all test resources automatically
+
+Environment variables:
+```bash
+VLLM_MODEL=facebook/opt-125m      # Model to test with
+VLLM_IMAGE=vllm/vllm-openai:latest # vLLM image
+TARGET_NAMESPACE=downstream-llm-d  # Namespace
+```
+
+**Feature Tests:**
+
+Test specific profiler features:
+
+```bash
+# Deploy profiler first
+./deploy.sh
+
+# Run feature tests
+oc apply -f test-profiler-features.yaml
+
+# Verify results (check logs, env vars, etc.)
+
+# Cleanup
+oc delete -f test-profiler-features.yaml
+```
+
+**Standalone Test:**
+
+Test the profiler standalone with an existing vLLM pod:
 
 ```bash
 # Requires access to a pod running vLLM
