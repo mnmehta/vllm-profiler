@@ -75,3 +75,21 @@ spec:
     image: python:3.11-slim
     command: ["sleep", "3600"]
   restartPolicy: Never
+
+---
+# Test 5: Verify VLLM_RPC_TIMEOUT environment variable
+# Should be instrumented and have VLLM_RPC_TIMEOUT=1800000 set by sitecustomize.py
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-vllm-rpc-timeout
+  namespace: downstream-llm-d
+  labels:
+    llm-d.ai/inferenceServing: "true"
+    test: "profiler-features"
+spec:
+  containers:
+  - name: test
+    image: python:3.11-slim
+    command: ["python3", "-c", "import os; print('VLLM_RPC_TIMEOUT:', os.environ.get('VLLM_RPC_TIMEOUT', 'NOT SET')); import time; time.sleep(3600)"]
+  restartPolicy: Never
