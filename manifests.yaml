@@ -36,7 +36,7 @@ spec:
           value: "downstream-llm-d"
         # Multi-label selector (OR logic): pod with ANY of these labels will be instrumented
         - name: TARGET_LABELS
-          value: "llm-d.ai/inferenceServing=true,app=vllm,vllm.profiler/enabled=true"
+          value: "llm-d.ai/inferenceServing=true,app.kubernetes.io/component=llminferenceservice-workload"
         - name: INJECT_ENV_NAME
           value: "PYTHONPATH"
         - name: INJECT_ENV_VALUE
