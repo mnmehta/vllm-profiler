@@ -37,7 +37,7 @@ output:
   # Output file path (supports environment variable substitution)
   # Use {pid} as placeholder for process ID
   # Use {rank} for tensor parallel rank (if available)
-  file_pattern: "trace_pid{pid}.json"
+  file_pattern: "/tmp/trace_pid{pid}.json"
 
   # Table output settings
   table:
