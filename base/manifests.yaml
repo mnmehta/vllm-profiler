@@ -25,16 +25,14 @@ spec:
         app: env-injector
     spec:
       serviceAccountName: env-injector
-      nodeSelector:
-        kubernetes.io/hostname: psap-llmd-h200-gpu-qdndv
+      # nodeSelector is set via overlay patches
       containers:
       - name: webhook
         image: quay.io/mimehta/vllmprofiler
         imagePullPolicy: Always
         env:
         - name: TARGET_NAMESPACE
-          value: "downstream-llm-d"
-        # Multi-label selector (OR logic): pod with ANY of these labels will be instrumented
+          value: "default"  # overridden by overlay
         - name: TARGET_LABELS
           value: "llm-d.ai/inferenceServing=true,app.kubernetes.io/component=llminferenceservice-workload"
         - name: INJECT_ENV_NAME
@@ -90,4 +88,3 @@ webhooks:
       path: /mutate
       port: 443
     caBundle: ""
-

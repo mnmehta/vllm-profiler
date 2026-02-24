@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: env-injector
+  namespace: vllm-profiler
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: CHANGE_ME  # TODO: Set node hostname for this cluster
+      containers:
+        - name: webhook
+          env:
+            - name: TARGET_NAMESPACE
+              value: "CHANGE_ME"  # TODO: Set target namespace for this cluster
+            - name: TARGET_LABELS
+              value: "CHANGE_ME"  # TODO: Set target labels (comma-separated, e.g., "label1=value1,label2=value2")
