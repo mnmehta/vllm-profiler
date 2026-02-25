@@ -6,8 +6,6 @@ metadata:
 spec:
   template:
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: psap-rhaiis-h200-gpu-worker-1-k5pc4
       containers:
         - name: webhook
           env:

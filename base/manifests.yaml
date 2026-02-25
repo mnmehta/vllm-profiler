@@ -25,7 +25,6 @@ spec:
         app: env-injector
     spec:
       serviceAccountName: env-injector
-      # nodeSelector is set via overlay patches
       containers:
       - name: webhook
         image: quay.io/mimehta/vllmprofiler

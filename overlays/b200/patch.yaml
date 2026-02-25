@@ -6,8 +6,6 @@ metadata:
 spec:
   template:
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: dell-b200-2.bmas-001.lab.rdu2.dc.redhat.com  # TODO: Set node hostname for b200 cluster
       containers:
         - name: webhook
           env:

@@ -7,7 +7,7 @@
 #   "100-150"           - Profile calls 100 through 150
 #   "50-100,200-300"    - Profile calls 50-100 AND 200-300
 #   "0-50"              - Profile first 50 calls
-profiling_ranges: "100-150,200-300"
+profiling_ranges: "1050-1060"
 
 # Torch profiler activities to record
 # Available: CPU, CUDA
