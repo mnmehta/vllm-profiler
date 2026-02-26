@@ -7,7 +7,7 @@
 #   "100-150"           - Profile calls 100 through 150
 #   "50-100,200-300"    - Profile calls 50-100 AND 200-300
 #   "0-50"              - Profile first 50 calls
-profiling_ranges: "100-150"
+profiling_ranges: "1050-1060"
 
 # Torch profiler activities to record
 # Available: CPU, CUDA
@@ -34,10 +34,13 @@ output:
   # Set to false to skip trace export (only print table)
   export_chrome_trace: true
 
-  # Output file path (supports environment variable substitution)
-  # Use {pid} as placeholder for process ID
-  # Use {rank} for tensor parallel rank (if available)
-  file_pattern: "/tmp/trace_pid{pid}.json"
+  # Output file path (supports placeholders)
+  # {pid} - process ID
+  # {rank} - tensor parallel rank (if available)
+  # {range} - profiling range (e.g., "100_150" for range 100-150)
+  # {counter} - range counter (0 for first range, 1 for second, etc.)
+  # {datetime} - timestamp in YYYYMMDD_HHMMSS format
+  file_pattern: "/tmp/trace_{range}_{counter}_{datetime}.json"
 
   # Table output settings
   table:

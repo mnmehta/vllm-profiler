@@ -66,11 +66,14 @@ This system enables real-time torch profiling of vLLM model execution without re
 ### Deploy
 
 ```bash
-# Deploy webhook and all components
-./deploy.sh
+# Deploy to h200 cluster
+CLUSTER=psap-rhaiis-h200 ./deploy.sh
 
-# Or skip image build if using existing image
-./deploy.sh --skip-build
+# Deploy to b200 cluster
+CLUSTER=b200 ./deploy.sh
+
+# Skip building image (use existing)
+CLUSTER=psap-rhaiis-h200 ./deploy.sh --skip-build
 ```
 
 The deployment script will:
@@ -80,6 +83,101 @@ The deployment script will:
 4. Generate TLS certificates
 5. Configure webhook with CA bundle
 6. Validate deployment
+
+## Multi-Cluster Support
+
+This project uses Kustomize overlays to support deployment across multiple clusters with different configurations.
+
+### Directory Structure
+
+```
+vllm-profiler/
+├── base/
+│   ├── kustomization.yaml      # Base kustomization
+│   └── manifests.yaml          # Base manifests (no cluster-specific values)
+├── overlays/
+│   ├── psap-rhaiis-h200/       # H200 cluster overlay
+│   │   ├── kustomization.yaml  # Cluster-specific ConfigMap namespace
+│   │   ├── patch.yaml          # nodeSelector + TARGET_NAMESPACE
+│   │   ├── sitecustomize.py    # Symlink to ../../sitecustomize.py
+│   │   └── profiler_config.yaml # Symlink to ../../profiler_config.yaml
+│   ├── b200/                   # B200 cluster overlay
+│   │   └── ...                 # Same structure
+│   └── placeholder/            # Template for new clusters
+│       └── ...                 # Same structure
+├── sitecustomize.py            # Shared profiler code (symlinked into overlays)
+├── profiler_config.yaml        # Shared profiler config (symlinked into overlays)
+└── deploy.sh                   # Deployment script with CLUSTER parameter
+```
+
+### Cluster-Specific Configuration
+
+Each overlay contains:
+
+**`patch.yaml`** - Cluster-specific Kubernetes patches:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: env-injector
+  namespace: vllm-profiler
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: <cluster-specific-node>
+      containers:
+        - name: webhook
+          env:
+            - name: TARGET_NAMESPACE
+              value: "<cluster-specific-namespace>"
+```
+
+**`kustomization.yaml`** - ConfigMap namespace:
+```yaml
+configMapGenerator:
+  - name: env-injector-files
+    namespace: <cluster-specific-namespace>
+    files:
+      - sitecustomize.py
+      - profiler_config.yaml
+```
+
+### Adding a New Cluster
+
+1. Copy the placeholder overlay:
+   ```bash
+   cp -r overlays/placeholder overlays/my-new-cluster
+   ```
+
+2. Create symlinks for shared files:
+   ```bash
+   cd overlays/my-new-cluster
+   ln -sf ../../sitecustomize.py sitecustomize.py
+   ln -sf ../../profiler_config.yaml profiler_config.yaml
+   ```
+
+3. Edit `patch.yaml` with cluster-specific values:
+   - `nodeSelector` - Target node hostname
+   - `TARGET_NAMESPACE` - Namespace where pods will be profiled
+
+4. Edit `kustomization.yaml`:
+   - Update ConfigMap `namespace` to match TARGET_NAMESPACE
+
+5. Deploy:
+   ```bash
+   CLUSTER=my-new-cluster ./deploy.sh
+   ```
+
+### Available Clusters
+
+| Cluster | Description | Usage |
+|---------|-------------|-------|
+| `psap-rhaiis-h200` | H200 GPU cluster | `CLUSTER=psap-rhaiis-h200 ./deploy.sh` |
+| `b200` | B200 GPU cluster | `CLUSTER=b200 ./deploy.sh` |
+| `placeholder` | Template for new clusters | Copy and customize |
+
+**Note:** The `CLUSTER` name is just a directory identifier under `overlays/`. It doesn't need to match the actual Kubernetes cluster name - you can name overlays however you prefer.
 
 ### Configuration
 
@@ -178,11 +276,16 @@ kubectl cp downstream-llm-d/<pod-name>:/path/to/trace<pid>.json ./trace.json
 
 ```
 vllm-profiler/
+├── base/                       # Base Kustomize resources
+│   ├── kustomization.yaml      # Base kustomization
+│   └── manifests.yaml          # Base Kubernetes manifests
+├── overlays/                   # Cluster-specific overlays
+│   ├── psap-rhaiis-h200/       # H200 cluster configuration
+│   ├── b200/                   # B200 cluster configuration
+│   └── placeholder/            # Template for new clusters
 ├── sitecustomize.py            # Profiler import hook (injected into pods)
 ├── profiler_config.yaml        # Default profiler configuration
 ├── webhook.py                  # Flask mutating admission webhook
-├── manifests.yaml              # Kubernetes resources
-├── kustomization.yaml          # ConfigMap generator
 ├── Dockerfile                  # Webhook container image
 ├── requirements.txt            # Python dependencies
 ├── deploy.sh                   # Deployment automation script
@@ -268,6 +371,7 @@ See [CONFIGURATION_EXAMPLES.md](CONFIGURATION_EXAMPLES.md) for comprehensive con
 - `LOG_LEVEL`: Webhook logging level (default: "DEBUG")
 
 **Deployment:**
+- `CLUSTER`: Cluster overlay to use (REQUIRED, e.g., "psap-rhaiis-h200", "b200")
 - `CONTAINER_RUNTIME`: Container runtime to use (default: "podman")
 - `IMAGE_REGISTRY`: Image registry (default: "quay.io/mimehta")
 - `IMAGE_TAG`: Image tag (default: "latest")

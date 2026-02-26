@@ -10,9 +10,8 @@ IMAGE_NAME="${IMAGE_NAME:-vllmprofiler}"
 IMAGE_REGISTRY="${IMAGE_REGISTRY:-quay.io/mimehta}"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
 FULL_IMAGE="${IMAGE_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
-MANIFESTS_FILE="manifests.yaml"
 NAMESPACE="vllm-profiler"
-TARGET_NAMESPACE="${TARGET_NAMESPACE:-downstream-llm-d}"
+CLUSTER="${CLUSTER:-}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -50,20 +49,24 @@ Options:
     --help              Show this help message
 
 Environment Variables:
+    CLUSTER             Cluster overlay to use (REQUIRED)
+                        Available: psap-rhaiis-h200, b200, placeholder
     CONTAINER_RUNTIME   Container runtime to use (default: podman)
     IMAGE_REGISTRY      Image registry (default: quay.io/mimehta)
     IMAGE_TAG           Image tag (default: latest)
-    TARGET_NAMESPACE    Namespace to inject profiler into (default: downstream-llm-d)
 
 Examples:
-    # Full deployment
-    $0
+    # Deploy to h200 cluster
+    CLUSTER=psap-rhaiis-h200 $0
+
+    # Deploy to b200 cluster
+    CLUSTER=b200 $0
 
     # Skip building image (use existing)
-    $0 --skip-build
+    CLUSTER=psap-rhaiis-h200 $0 --skip-build
 
-    # Use different namespace
-    TARGET_NAMESPACE=my-namespace $0
+    # Deploy to specific cluster without building
+    CLUSTER=b200 $0 --skip-build
 
 EOF
     exit 0
@@ -93,6 +96,23 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Validate CLUSTER is set
+if [ -z "${CLUSTER}" ]; then
+    log_error "CLUSTER environment variable is required"
+    log_info "Available clusters:"
+    ls -1 overlays/
+    log_info "Usage: CLUSTER=<cluster-name> $0"
+    exit 1
+fi
+
+# Validate cluster overlay exists
+if [ ! -d "overlays/${CLUSTER}" ]; then
+    log_error "Cluster overlay 'overlays/${CLUSTER}' not found"
+    log_info "Available overlays:"
+    ls -1 overlays/
+    exit 1
+fi
+
 # Main deployment
 main() {
     log_info "Starting vLLM Profiler Webhook deployment"
@@ -100,17 +120,17 @@ main() {
     echo "  - Container Runtime: ${CONTAINER_RUNTIME}"
     echo "  - Image: ${FULL_IMAGE}"
     echo "  - Webhook Namespace: ${NAMESPACE}"
-    echo "  - Target Namespace: ${TARGET_NAMESPACE}"
+    echo "  - Cluster Overlay: ${CLUSTER}"
     echo ""
 
     # Step 1: Build and push container image
     if [ "$SKIP_BUILD" = false ]; then
-        log_info "Step 1/7: Building container image..."
-        if ! ${CONTAINER_RUNTIME} build --runtime=runc -t "${IMAGE_NAME}" .; then
+        log_info "Step 1/6: Building container image..."
+        if ! ${CONTAINER_RUNTIME} build --platform linux/amd64 -t "${IMAGE_NAME}" .; then
             log_error "Container build failed"
             exit 1
         fi
-        log_success "Container image built"
+        log_success "Container image built for linux/amd64"
 
         log_info "Tagging image as ${FULL_IMAGE}..."
         ${CONTAINER_RUNTIME} tag "localhost/${IMAGE_NAME}" "${FULL_IMAGE}"
@@ -126,47 +146,39 @@ main() {
     fi
 
     # Step 2: Delete existing resources (idempotent deployment)
-    log_info "Step 2/7: Removing existing resources (if any)..."
-    oc delete -f "${MANIFESTS_FILE}" --ignore-not-found=true
+    log_info "Step 2/6: Removing existing resources (if any)..."
+    oc kustomize "overlays/${CLUSTER}" --load-restrictor LoadRestrictionsNone | oc delete -f - --ignore-not-found=true
     log_info "Waiting for resources to be deleted..."
     sleep 5
     log_success "Existing resources removed"
 
-    # Step 3: Apply manifests
-    log_info "Step 3/7: Deploying webhook resources..."
-    if ! oc apply -f "${MANIFESTS_FILE}"; then
-        log_error "Failed to apply manifests"
+    # Step 3: Apply all resources via kustomize overlay
+    log_info "Step 3/6: Deploying webhook resources and ConfigMap..."
+    if ! oc kustomize "overlays/${CLUSTER}" --load-restrictor LoadRestrictionsNone | oc apply -f -; then
+        log_error "Failed to apply kustomize overlay"
         exit 1
     fi
-    log_success "Webhook resources deployed"
+    log_success "Webhook resources and ConfigMap deployed"
 
-    # Step 4: Apply kustomization (ConfigMap)
-    log_info "Step 4/7: Creating ConfigMap with profiler code..."
-    if ! oc apply -k .; then
-        log_error "Failed to apply kustomization"
-        exit 1
-    fi
-    log_success "ConfigMap created in ${TARGET_NAMESPACE}"
-
-    # Step 5: Generate TLS certificates
-    log_info "Step 5/7: Generating TLS certificates..."
+    # Step 4: Generate TLS certificates
+    log_info "Step 4/6: Generating TLS certificates..."
     if ! bash gen-certs.sh; then
         log_error "Certificate generation failed"
         exit 1
     fi
     log_success "TLS certificates generated"
 
-    # Step 6: Patch webhook with CA bundle
-    log_info "Step 6/7: Patching webhook with CA bundle..."
+    # Step 5: Patch webhook with CA bundle
+    log_info "Step 5/6: Patching webhook with CA bundle..."
     if ! bash patch-ca-bundle.sh; then
         log_error "CA bundle patching failed"
         exit 1
     fi
     log_success "Webhook CA bundle configured"
 
-    # Step 7: Validate deployment
+    # Step 6: Validate deployment
     if [ "$SKIP_VALIDATION" = false ]; then
-        log_info "Step 7/7: Validating webhook deployment..."
+        log_info "Step 6/6: Validating webhook deployment..."
         if ! DO_SIMPLE_TEST=1 ./validate_webhook.sh; then
             log_warn "Webhook validation reported issues (see output above)"
         else
@@ -179,13 +191,15 @@ main() {
     echo ""
     log_success "Deployment complete!"
     echo ""
+    log_info "Verify configuration with:"
+    echo "  oc logs -n vllm-profiler deployment/env-injector | head -10"
+    echo ""
     log_info "Next steps:"
-    echo "  1. Create a pod in namespace '${TARGET_NAMESPACE}' with label:"
-    echo "     llm-d.ai/inferenceServing=true"
+    echo "  1. Create a pod matching the TARGET_LABELS configured in overlays/${CLUSTER}/patch.yaml"
     echo "  2. Check pod logs for profiler output after ~100-150 model executions"
     echo "  3. Retrieve trace file from pod for Chrome trace visualization"
     echo ""
-    log_info "To remove all resources, run: ./teardown.sh"
+    log_info "To remove all resources, run: CLUSTER=${CLUSTER} ./teardown.sh"
 }
 
 # Run main function

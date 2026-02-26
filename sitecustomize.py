@@ -180,12 +180,23 @@ class ProfilerConfig:
                     print(f"[profiler-config] Warning: Invalid range '{range_str}': {e}")
         return ranges
 
-    def get_output_filename(self, pid: Optional[int] = None, rank: Optional[int] = None) -> str:
+    def get_output_filename(self, pid: Optional[int] = None, rank: Optional[int] = None,
+                           range_start: Optional[int] = None, range_end: Optional[int] = None,
+                           counter: int = 0) -> str:
         """Generate output filename with substitutions."""
+        from datetime import datetime
+
         filename = self.output_file_pattern
         filename = filename.replace('{pid}', str(pid or os.getpid()))
         if rank is not None:
             filename = filename.replace('{rank}', str(rank))
+        if range_start is not None and range_end is not None:
+            filename = filename.replace('{range}', f"{range_start}_{range_end}")
+        if '{counter}' in filename:
+            filename = filename.replace('{counter}', str(counter))
+        if '{datetime}' in filename:
+            datetime_str = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = filename.replace('{datetime}', datetime_str)
         return filename
 
 
@@ -307,9 +318,42 @@ def wrap_func_with_profiler(original_func):
 
                 # Optionally export Chrome trace file
                 if _config.export_chrome_trace:
-                    output_file = _config.get_output_filename()
+                    import gzip
+                    import shutil
+
+                    # Generate filename with range and counter
+                    output_file = _config.get_output_filename(
+                        range_start=start,
+                        range_end=end,
+                        counter=current_range_idx
+                    )
+
+                    # Export uncompressed trace first
                     prof.export_chrome_trace(output_file)
                     print(f"[profiler] Exported trace to: {output_file}")
+
+                    # Compress the trace file
+                    compressed_file = output_file + ".gz"
+                    try:
+                        with open(output_file, 'rb') as f_in:
+                            with gzip.open(compressed_file, 'wb', compresslevel=9) as f_out:
+                                shutil.copyfileobj(f_in, f_out)
+
+                        # Get file sizes for reporting
+                        import os as _os
+                        original_size = _os.path.getsize(output_file)
+                        compressed_size = _os.path.getsize(compressed_file)
+                        ratio = (1 - compressed_size / original_size) * 100
+
+                        print(f"[profiler] Compressed trace to: {compressed_file}")
+                        print(f"[profiler] Compression: {original_size:,} -> {compressed_size:,} bytes ({ratio:.1f}% reduction)")
+
+                        # Remove uncompressed file to save space
+                        _os.remove(output_file)
+                        print(f"[profiler] Removed uncompressed file: {output_file}")
+                    except Exception as e:
+                        print(f"[profiler] Warning: Failed to compress trace file: {e}")
+                        print(f"[profiler] Uncompressed trace available at: {output_file}")
                 else:
                     print(f"[profiler] Chrome trace export disabled (export_chrome_trace=false)")
 
