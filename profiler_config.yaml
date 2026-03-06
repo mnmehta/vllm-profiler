@@ -34,10 +34,14 @@ output:
   # Set to false to skip trace export (only print table)
   export_chrome_trace: true
 
-  # Output file path (supports environment variable substitution)
-  # Use {pid} as placeholder for process ID
-  # Use {rank} for tensor parallel rank (if available)
-  file_pattern: "/tmp/trace_pid{pid}.json"
+  # Output file path (supports placeholders)
+  # Available placeholders:
+  #   {pid}   - Process ID
+  #   {rank}  - Tensor parallel rank (if available)
+  #   {start} - Start of profiling range
+  #   {end}   - End of profiling range
+  # Note: {start} and {end} are required when using multiple ranges to avoid overwriting files
+  file_pattern: "/tmp/trace_pid{pid}_range{start}-{end}.json"
 
   # Table output settings
   table:

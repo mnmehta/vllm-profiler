@@ -42,7 +42,7 @@ class ProfilerConfig:
         self.profile_memory: bool = False
         self.with_modules: bool = False
         self.export_chrome_trace: bool = True
-        self.output_file_pattern: str = "trace_pid{pid}.json"
+        self.output_file_pattern: str = "/tmp/trace_pid{pid}_range{start}-{end}.json"
         self.table_enabled: bool = True
         self.table_sort_by: str = "cuda_time_total"
         self.table_row_limit: int = 50
@@ -180,12 +180,17 @@ class ProfilerConfig:
                     print(f"[profiler-config] Warning: Invalid range '{range_str}': {e}")
         return ranges
 
-    def get_output_filename(self, pid: Optional[int] = None, rank: Optional[int] = None) -> str:
+    def get_output_filename(self, pid: Optional[int] = None, rank: Optional[int] = None,
+                           range_start: Optional[int] = None, range_end: Optional[int] = None) -> str:
         """Generate output filename with substitutions."""
         filename = self.output_file_pattern
         filename = filename.replace('{pid}', str(pid or os.getpid()))
         if rank is not None:
             filename = filename.replace('{rank}', str(rank))
+        if range_start is not None:
+            filename = filename.replace('{start}', str(range_start))
+        if range_end is not None:
+            filename = filename.replace('{end}', str(range_end))
         return filename
 
 
@@ -307,7 +312,7 @@ def wrap_func_with_profiler(original_func):
 
                 # Optionally export Chrome trace file
                 if _config.export_chrome_trace:
-                    output_file = _config.get_output_filename()
+                    output_file = _config.get_output_filename(range_start=start, range_end=end)
                     prof.export_chrome_trace(output_file)
                     print(f"[profiler] Exported trace to: {output_file}")
                 else:
